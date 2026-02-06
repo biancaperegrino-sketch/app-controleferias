@@ -61,4 +61,14 @@ export interface VacationRecord {
   attachmentData?: string; 
   unit: string;
   state: string;
+  observation?: string; // Campo opcional para importação
+}
+
+export interface ImportHistory {
+  id: string;
+  date: string;
+  userName: string;
+  fileName: string;
+  recordsCount: number;
+  status: 'Sucesso' | 'Erro';
 }

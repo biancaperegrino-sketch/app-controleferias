@@ -32,16 +32,16 @@ const LoginPage: React.FC = () => {
           <div className="h-2 bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-800"></div>
 
           <div className="p-10 pb-6">
-            {/* FGV Logo - Horizontal Version */}
-            <div className="mb-10 flex justify-between items-start">
+            {/* FGV Logo - Versão FGV DO Anexada */}
+            <div className="mb-10 flex justify-center">
               <img 
-                src="https://logodownload.org/wp-content/uploads/2014/10/fgv-logo-1.png" 
-                alt="FGV Logo" 
-                className="h-10 w-auto object-contain"
+                src="https://raw.githubusercontent.com/filipe-fgv/logos/main/fgv-do-logo.png" 
+                alt="FGV DO" 
+                className="h-14 w-auto object-contain"
+                onError={(e) => {
+                  e.currentTarget.src = "https://logodownload.org/wp-content/uploads/2014/10/fgv-logo-1.png";
+                }}
               />
-              <div className="bg-blue-50 p-2 rounded-xl">
-                <ShieldCheck size={20} className="text-blue-600" />
-              </div>
             </div>
 
             {/* Title Section */}

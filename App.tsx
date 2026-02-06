@@ -14,7 +14,8 @@ import {
   ShieldCheck,
   History,
   Lock,
-  BarChart3
+  BarChart3,
+  FileUp
 } from 'lucide-react';
 
 import { Collaborator, VacationRecord, Holiday, User, UserRole, AuditLog } from './types';
@@ -28,6 +29,7 @@ import HolidaysPage from './pages/HolidaysPage';
 import IndividualReport from './pages/IndividualReport';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
+import ImportPage from './pages/ImportPage';
 
 // Auth Context
 interface AuthContextType {
@@ -105,7 +107,6 @@ const App: React.FC = () => {
   };
 
   const login = async (role: UserRole) => {
-    // Simulação de retorno do Microsoft Entra ID (SSO) com dados da FGV
     const mockUser: User = {
       id: role === UserRole.ADMIN ? "ms-admin-9988" : "ms-user-4455",
       name: role === UserRole.ADMIN ? "Administrador de Operações" : "Colaborador Operacional",
@@ -156,6 +157,14 @@ const App: React.FC = () => {
                       } />
                       <Route path="/holidays" element={<HolidaysPage holidays={holidays} setHolidays={setHolidays} />} />
                       <Route path="/report" element={<IndividualReport collaborators={collaborators} records={records} />} />
+                      <Route path="/import" element={
+                        <ImportPage 
+                          collaborators={collaborators} 
+                          setCollaborators={setCollaborators} 
+                          records={records} 
+                          setRecords={setRecords} 
+                        />
+                      } />
                       <Route path="/profile" element={<ProfilePage logs={logs} />} />
                     </Routes>
                   </div>
@@ -204,6 +213,7 @@ const Sidebar: React.FC = () => {
     { label: 'Gestão de Férias', icon: Palmtree, path: '/vacations' },
     { label: 'Resumo Individual', icon: FileText, path: '/report' },
     { label: 'Feriados', icon: Calendar, path: '/holidays' },
+    { label: 'Importar Dados', icon: FileUp, path: '/import' },
   ];
 
   return (
@@ -220,13 +230,18 @@ const Sidebar: React.FC = () => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="p-6 h-full flex flex-col">
-          {/* Logo FGV no topo da sidebar */}
           <div className="mb-10 px-2 flex flex-col gap-4">
-            <img 
-              src="https://logodownload.org/wp-content/uploads/2014/10/fgv-logo-1.png" 
-              alt="FGV Logo" 
-              className="h-8 w-auto object-contain brightness-0 invert opacity-90"
-            />
+            {/* Logo Atualizada FGV DO */}
+            <div className="bg-white p-3 rounded-2xl shadow-lg mb-2">
+              <img 
+                src="https://raw.githubusercontent.com/filipe-fgv/logos/main/fgv-do-logo.png" 
+                alt="FGV DO" 
+                className="h-10 w-auto object-contain mx-auto"
+                onError={(e) => {
+                  e.currentTarget.src = "https://logodownload.org/wp-content/uploads/2014/10/fgv-logo-1.png";
+                }}
+              />
+            </div>
             <div className="flex items-center gap-3 text-white">
               <div className="bg-white/10 p-1.5 rounded-lg">
                 <ShieldCheck size={18} className="text-white" />
