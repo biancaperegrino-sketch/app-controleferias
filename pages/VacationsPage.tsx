@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { VacationRecord, Collaborator, Holiday, RequestType, UserRole } from '../types';
 import { calculateVacationMetrics, formatDate } from '../utils/dateUtils';
-import { Plus, X, Edit2, Trash2, Paperclip, AlertCircle, Palmtree, ShieldAlert, Calculator, Hash } from 'lucide-react';
+import { Plus, X, Edit2, Trash2, Paperclip, AlertCircle, Palmtree, ShieldAlert, Calculator, Hash, Calendar } from 'lucide-react';
 import { useAuth } from '../App';
 
 interface VacationsPageProps {
@@ -27,7 +27,7 @@ const VacationsPage: React.FC<VacationsPageProps> = ({ records, setRecords, coll
     attachmentName: '',
     unit: '',
     state: '',
-    manualDays: '' // Novo campo para Saldo Inicial
+    manualDays: '' 
   });
 
   const [metrics, setMetrics] = useState({
@@ -48,8 +48,9 @@ const VacationsPage: React.FC<VacationsPageProps> = ({ records, setRecords, coll
   }, [formData.collaboratorId, collaborators]);
 
   useEffect(() => {
-    if (!isInitialBalance && formData.startDate && formData.endDate && formData.state) {
-      const result = calculateVacationMetrics(formData.startDate, formData.endDate, formData.state, holidays);
+    if (!isInitialBalance && formData.startDate && formData.endDate && formData.state && formData.unit) {
+      // Regra definitiva de cálculo - Dias úteis considerando Unidade para feriados locais
+      const result = calculateVacationMetrics(formData.startDate, formData.endDate, formData.state, formData.unit, holidays);
       setMetrics(result);
     } else if (isInitialBalance) {
       setMetrics({
@@ -58,7 +59,7 @@ const VacationsPage: React.FC<VacationsPageProps> = ({ records, setRecords, coll
         holidaysCount: 0
       });
     }
-  }, [formData.startDate, formData.endDate, formData.state, formData.manualDays, formData.type, holidays]);
+  }, [formData.startDate, formData.endDate, formData.state, formData.unit, formData.manualDays, formData.type, holidays]);
 
   const handleOpenModal = (record?: VacationRecord) => {
     if (!isAdmin) return;
@@ -82,14 +83,15 @@ const VacationsPage: React.FC<VacationsPageProps> = ({ records, setRecords, coll
       });
     } else {
       setEditingRecord(null);
+      const firstCollab = collaborators[0];
       setFormData({
-        collaboratorId: collaborators[0]?.id || '',
+        collaboratorId: firstCollab?.id || '',
         type: RequestType.AGENDADAS,
         startDate: '',
         endDate: '',
         attachmentName: '',
-        unit: '',
-        state: '',
+        unit: firstCollab?.unit || '',
+        state: firstCollab?.state || '',
         manualDays: ''
       });
       setMetrics({ calendarDays: 0, businessDays: 0, holidaysCount: 0 });
@@ -100,7 +102,6 @@ const VacationsPage: React.FC<VacationsPageProps> = ({ records, setRecords, coll
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Se for Saldo Inicial, as datas são registradas como o dia atual para manter a cronologia se estiverem vazias
     const finalStartDate = isInitialBalance ? (formData.startDate || new Date().toISOString().split('T')[0]) : formData.startDate;
     const finalEndDate = isInitialBalance ? (formData.endDate || finalStartDate) : formData.endDate;
 
@@ -144,258 +145,281 @@ const VacationsPage: React.FC<VacationsPageProps> = ({ records, setRecords, coll
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Gestão de Férias</h2>
-          <p className="text-slate-500">Registre e controle as movimentações de saldo.</p>
+          <h2 className="text-3xl font-black text-white tracking-tight uppercase">Gestão Operacional de Férias</h2>
+          <p className="text-[#8B949E] font-bold text-sm uppercase tracking-wider">Lançamentos e Movimentações de Saldo</p>
         </div>
         {isAdmin ? (
           <button 
             onClick={() => handleOpenModal()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"
+            className="bg-[#1F6FEB] hover:bg-[#388BFD] text-white px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
           >
             <Plus size={18} />
             Incluir Movimentação
           </button>
         ) : (
-          <div className="bg-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 text-slate-500 text-xs font-medium">
-            <ShieldAlert size={14} />
-            Perfil de Leitura - Visualização apenas
+          <div className="bg-[#161B22] border border-[#30363D] px-4 py-3 rounded-2xl flex items-center gap-3 text-[#8B949E] text-[10px] font-black uppercase tracking-widest">
+            <ShieldAlert size={16} className="text-[#1F6FEB]" />
+            Somente Consulta
           </div>
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-[#161B22] rounded-[2rem] border border-[#30363D] shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500 font-medium uppercase tracking-wider">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-[#0D1117] text-[#8B949E] font-black uppercase tracking-[0.2em] text-[10px]">
               <tr>
-                <th className="px-6 py-4">Colaborador</th>
-                <th className="px-6 py-4">Tipo</th>
-                <th className="px-6 py-4">Início</th>
-                <th className="px-6 py-4">Fim</th>
-                <th className="px-6 py-4 text-center">Úteis / Saldo</th>
-                <th className="px-6 py-4 text-center">Anexo</th>
-                {isAdmin && <th className="px-6 py-4 text-right">Ações</th>}
+                <th className="px-8 py-5">Colaborador</th>
+                <th className="px-8 py-5">Categoria de Lançamento</th>
+                <th className="px-8 py-5">Período Selecionado</th>
+                <th className="px-8 py-5 text-center">Dias Úteis / Saldo</th>
+                <th className="px-8 py-5 text-center">Doc</th>
+                {isAdmin && <th className="px-8 py-5 text-right">Gestão</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#30363D]">
               {[...records].sort((a,b) => b.startDate.localeCompare(a.startDate)).map((record) => {
                 const collab = collaborators.find(c => c.id === record.collaboratorId);
                 return (
-                  <tr key={record.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-900">{collab?.name || 'Excluído'}</td>
-                    <td className="px-6 py-4">
+                  <tr key={record.id} className="hover:bg-[#1F6FEB]/5 transition-colors group">
+                    <td className="px-8 py-6 font-bold text-white uppercase tracking-tight">{collab?.name || 'Excluído'}</td>
+                    <td className="px-8 py-6">
                       <span className={`
-                        inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
-                        ${record.type === RequestType.SALDO_INICIAL ? 'border-blue-200 bg-blue-50 text-blue-700' : 
-                          record.type === RequestType.DESCONTO ? 'border-red-200 bg-red-50 text-red-700' : 
-                          'border-emerald-200 bg-emerald-50 text-emerald-700'}
+                        inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border
+                        ${record.type === RequestType.SALDO_INICIAL ? 'border-blue-500/30 bg-blue-900/40 text-[#1F6FEB]' : 
+                          record.type === RequestType.DESCONTO ? 'border-rose-500/30 bg-rose-900/40 text-rose-500' : 
+                          'border-emerald-500/30 bg-emerald-900/40 text-emerald-500'}
                       `}>
                         {record.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">
-                      {record.type === RequestType.SALDO_INICIAL && record.startDate === record.endDate ? '-' : formatDate(record.startDate)}
+                    <td className="px-8 py-6 text-[#8B949E] font-bold text-xs tabular-nums uppercase">
+                      {record.type === RequestType.SALDO_INICIAL && record.startDate === record.endDate ? '-' : (
+                        <div className="flex items-center gap-2">
+                          {formatDate(record.startDate)} <span className="text-[#30363D] tracking-tighter">—</span> {formatDate(record.endDate)}
+                        </div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 text-slate-600">
-                      {record.type === RequestType.SALDO_INICIAL && record.startDate === record.endDate ? '-' : formatDate(record.endDate)}
-                    </td>
-                    <td className="px-6 py-4 text-center font-bold text-slate-800">{record.businessDays}</td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-8 py-6 text-center font-black text-white text-base tabular-nums">{record.businessDays}</td>
+                    <td className="px-8 py-6 text-center">
                       {record.attachmentName ? (
                         <div className="flex justify-center" title={record.attachmentName}>
-                          <Paperclip size={14} className="text-blue-500" />
+                          <Paperclip size={18} className="text-[#1F6FEB]" />
                         </div>
-                      ) : '-'}
+                      ) : <span className="text-[#30363D]">-</span>}
                     </td>
                     {isAdmin && (
-                      <td className="px-6 py-4 text-right flex justify-end gap-2">
-                        <button onClick={() => handleOpenModal(record)} className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
-                          <Edit2 size={16} />
-                        </button>
-                        <button onClick={() => handleDelete(record.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors">
-                          <Trash2 size={16} />
-                        </button>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => handleOpenModal(record)} className="p-3 text-[#8B949E] hover:text-[#1F6FEB] hover:bg-[#30363D] rounded-xl transition-all">
+                            <Edit2 size={18} />
+                          </button>
+                          <button onClick={() => handleDelete(record.id)} className="p-3 text-[#8B949E] hover:text-rose-500 hover:bg-rose-900/20 rounded-xl transition-all">
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
                 );
               })}
+              {records.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4 opacity-40">
+                      <Palmtree size={64} className="text-[#30363D]" />
+                      <p className="font-black uppercase tracking-[0.3em] text-[10px]">Nenhuma movimentação registrada</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
       {isAdmin && isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-2">
-                <Palmtree className="text-blue-600" size={20} />
-                <h3 className="font-bold text-slate-800 text-lg">
-                  {editingRecord ? 'Editar Registro' : 'Inclusão de Férias'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#0D1117]/90 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="bg-[#161B22] w-full max-w-4xl rounded-[2.5rem] shadow-2xl border border-[#30363D] overflow-hidden animate-in zoom-in duration-200">
+            <div className="px-10 py-8 border-b border-[#30363D] flex items-center justify-between bg-[#0D1117]/50">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 bg-[#1F6FEB] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                   <Palmtree size={24} />
+                </div>
+                <h3 className="font-black text-white text-lg uppercase tracking-tight">
+                  {editingRecord ? 'Atualizar Movimentação' : 'Novo Lançamento Operacional'}
                 </h3>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 bg-[#30363D] hover:bg-[#484F58] rounded-full flex items-center justify-center text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleSave} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+            <form onSubmit={handleSave} className="p-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-8">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Colaborador</label>
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Colaborador Destino</label>
                     <select 
                       required
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                      className="w-full px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-black text-xs uppercase text-white appearance-none cursor-pointer"
                       value={formData.collaboratorId}
                       onChange={e => setFormData({...formData, collaboratorId: e.target.value})}
                     >
-                      <option value="">Selecione...</option>
-                      {collaborators.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      <option value="">SELECIONE O FUNCIONÁRIO...</option>
+                      {collaborators.map(c => <option key={c.id} value={c.id}>{c.name} — {c.unit}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Tipo de Solicitação</label>
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Tipo de Solicitação / Evento</label>
                     <select 
-                      className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                      className="w-full px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-black text-xs uppercase text-white appearance-none cursor-pointer"
                       value={formData.type}
                       onChange={e => setFormData({...formData, type: e.target.value as RequestType, manualDays: '', startDate: '', endDate: ''})}
                     >
-                      <option value={RequestType.SALDO_INICIAL}>Saldo Inicial</option>
-                      <option value={RequestType.DESCONTO}>Desconto do saldo de férias</option>
-                      <option value={RequestType.AGENDADAS}>Férias agendadas no RH</option>
+                      <option value={RequestType.SALDO_INICIAL}>SALDO INICIAL (CREDIT)</option>
+                      <option value={RequestType.AGENDADAS}>FÉRIAS AGENDADAS NO RH (PLANNED)</option>
+                      <option value={RequestType.DESCONTO}>DESCONTO DO SALDO (DEBIT)</option>
                     </select>
                   </div>
 
                   {!isInitialBalance ? (
-                    <div className="grid grid-cols-2 gap-4 animate-in slide-in-from-top-2">
+                    <div className="grid grid-cols-2 gap-6 animate-in slide-in-from-top-2">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Início</label>
-                        <input 
-                          required
-                          type="date" 
-                          className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                          value={formData.startDate}
-                          onChange={e => setFormData({...formData, startDate: e.target.value})}
-                        />
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Data de Início</label>
+                        <div className="relative">
+                           <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#484F58]" size={16} />
+                           <input 
+                            required
+                            type="date" 
+                            className="w-full pl-12 pr-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-bold text-white transition-all uppercase text-xs"
+                            value={formData.startDate}
+                            onChange={e => setFormData({...formData, startDate: e.target.value})}
+                          />
+                        </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Fim</label>
-                        <input 
-                          required
-                          type="date" 
-                          className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                          value={formData.endDate}
-                          onChange={e => setFormData({...formData, endDate: e.target.value})}
-                        />
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Data de Término</label>
+                        <div className="relative">
+                           <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#484F58]" size={16} />
+                           <input 
+                            required
+                            type="date" 
+                            className="w-full pl-12 pr-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-bold text-white transition-all uppercase text-xs"
+                            value={formData.endDate}
+                            onChange={e => setFormData({...formData, endDate: e.target.value})}
+                          />
+                        </div>
                       </div>
                     </div>
                   ) : (
                     <div className="animate-in slide-in-from-top-2">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade de dias (Saldo Inicial)</label>
+                      <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Lançamento de Dias de Saldo</label>
                       <div className="relative">
-                        <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                        <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-[#484F58]" size={18} />
                         <input 
                           required
                           type="number" 
                           min="0"
-                          placeholder="Ex: 30"
-                          className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-bold"
+                          placeholder="EX: 30"
+                          className="w-full pl-14 pr-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-black text-xl text-white transition-all tabular-nums"
                           value={formData.manualDays}
                           onChange={e => setFormData({...formData, manualDays: e.target.value})}
                         />
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-2 italic">
-                        Nota: Para saldo inicial, as datas são opcionais e não afetam o cálculo.
+                      <p className="text-[10px] text-[#484F58] mt-3 font-bold uppercase italic tracking-widest">
+                        O saldo manual é creditado diretamente ao colaborador.
                       </p>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Comprovação (Anexo)</label>
-                    <div className="flex items-center gap-2">
-                      <label className="flex-1 cursor-pointer bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg p-2 text-center hover:bg-slate-100 transition-colors">
-                        <span className="text-sm text-slate-500">
-                          {formData.attachmentName || 'Selecionar arquivo...'}
-                        </span>
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Documento de Comprovação (OPCIONAL)</label>
+                    <div className="flex items-center gap-3">
+                      <label className="flex-1 cursor-pointer bg-[#0D1117] border border-[#30363D] border-dashed rounded-2xl p-4 text-center hover:border-[#1F6FEB] hover:bg-[#1F6FEB]/5 transition-all group">
+                        <div className="flex items-center justify-center gap-3">
+                           <Paperclip size={16} className="text-[#484F58] group-hover:text-[#1F6FEB]" />
+                           <span className="text-[11px] font-bold text-[#484F58] group-hover:text-[#8B949E] uppercase tracking-widest truncate">
+                            {formData.attachmentName || 'CLIQUE PARA ANEXAR ARQUIVO'}
+                          </span>
+                        </div>
                         <input type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.jpg,.png,.doc,.docx,.eml" />
                       </label>
                       {formData.attachmentName && (
-                        <button type="button" onClick={() => setFormData({...formData, attachmentName: ''})} className="p-2 text-red-500">
-                          <Trash2 size={16} />
+                        <button type="button" onClick={() => setFormData({...formData, attachmentName: ''})} className="h-12 w-12 flex items-center justify-center text-rose-500 bg-rose-950/20 border border-rose-500/30 rounded-2xl hover:bg-rose-500 hover:text-white transition-all">
+                          <Trash2 size={20} />
                         </button>
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className={`rounded-xl p-6 flex flex-col justify-between border transition-all duration-300 ${isInitialBalance ? 'bg-slate-50 border-slate-200' : 'bg-blue-50 border-blue-100'}`}>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      {isInitialBalance ? <Calculator size={18} className="text-slate-500" /> : <Calculator size={18} className="text-blue-600" />}
-                      <h4 className={`text-sm font-bold uppercase tracking-wider ${isInitialBalance ? 'text-slate-600' : 'text-blue-800'}`}>
-                        {isInitialBalance ? 'Entrada Manual' : 'Cálculos Automáticos'}
+                <div className={`rounded-[2.5rem] p-10 flex flex-col justify-between border transition-all duration-500 ${isInitialBalance ? 'bg-[#0D1117] border-[#30363D]' : 'bg-[#1F6FEB]/10 border-[#1F6FEB]/30'}`}>
+                  <div className="space-y-8">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-2xl ${isInitialBalance ? 'bg-[#161B22] text-[#8B949E]' : 'bg-[#1F6FEB] text-white'}`}>
+                        <Calculator size={22} />
+                      </div>
+                      <h4 className={`text-xs font-black uppercase tracking-[0.2em] ${isInitialBalance ? 'text-[#8B949E]' : 'text-white'}`}>
+                        {isInitialBalance ? 'Projeção Manual' : 'Painel de Cálculo'}
                       </h4>
                     </div>
 
                     {!isInitialBalance ? (
-                      <div className="space-y-2 animate-in fade-in duration-300">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-blue-600">Dias Corridos</span>
-                          <span className="font-bold text-blue-900">{metrics.calendarDays}</span>
+                      <div className="space-y-4 animate-in fade-in duration-300">
+                        <div className="flex justify-between items-center text-sm border-b border-[#30363D] pb-3">
+                          <span className="text-[#8B949E] font-bold uppercase tracking-widest text-[10px]">Período Corrido</span>
+                          <span className="font-black text-white tabular-nums">{metrics.calendarDays} DIAS</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-blue-600">Feriados no Período</span>
-                          <span className="font-bold text-blue-900">{metrics.holidaysCount}</span>
+                        <div className="flex justify-between items-center text-sm border-b border-[#30363D] pb-3">
+                          <span className="text-[#8B949E] font-bold uppercase tracking-widest text-[10px]">Feriados Locais/Nacionais</span>
+                          <span className="font-black text-[#1F6FEB] tabular-nums">{metrics.holidaysCount} DIAS</span>
                         </div>
-                        <div className="h-px bg-blue-200 my-2"></div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-blue-800 font-bold">Total Dias Úteis</span>
-                          <span className="text-2xl font-black text-blue-900">{metrics.businessDays}</span>
+                        <div className="pt-6 flex flex-col items-center justify-center py-6">
+                          <span className="text-[10px] font-black uppercase text-[#8B949E] tracking-[0.3em] mb-3">Total Líquido Úteis</span>
+                          <span className="text-7xl font-black text-white tabular-nums tracking-tighter shadow-blue-500/20">{metrics.businessDays}</span>
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4 animate-in fade-in duration-300">
-                        <div className="text-center py-6">
-                          <span className="block text-xs text-slate-500 uppercase font-black mb-1">Total a Creditar</span>
-                          <span className="text-5xl font-black text-slate-800">{metrics.businessDays}</span>
-                          <span className="block text-xs text-slate-400 font-bold mt-1">Dias de Saldo</span>
+                      <div className="space-y-8 animate-in fade-in duration-300 flex flex-col items-center justify-center h-full py-10">
+                        <div className="text-center">
+                          <span className="block text-[10px] text-[#8B949E] uppercase font-black tracking-[0.3em] mb-4">Crédito de Saldo</span>
+                          <span className="text-8xl font-black text-white tabular-nums tracking-tighter">{metrics.businessDays}</span>
                         </div>
-                        <div className="p-3 bg-white rounded-lg border border-slate-200 text-[10px] text-slate-600 leading-tight">
-                          Os dias inseridos manualmente serão adicionados diretamente ao saldo disponível do colaborador.
+                        <div className="p-6 bg-[#161B22] rounded-3xl border border-[#30363D] text-[10px] text-[#484F58] font-black uppercase tracking-widest leading-relaxed text-center">
+                          O VALOR INFORMADO SERÁ INTEGRADO AO BANCO DE FÉRIAS DO COLABORADOR.
                         </div>
                       </div>
                     )}
                   </div>
                   
                   {!isInitialBalance && (
-                    <div className="mt-6 flex items-start gap-3 bg-white p-3 rounded-lg border border-blue-200">
-                      <AlertCircle size={18} className="text-blue-500 shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-slate-600 leading-tight">
-                        Os dias úteis excluem finais de semana e feriados cadastrados para o estado <strong>{formData.state || 'selecionado'}</strong>.
+                    <div className="mt-10 flex items-start gap-4 bg-[#0D1117] p-6 rounded-3xl border border-[#30363D]">
+                      <AlertCircle size={20} className="text-[#1F6FEB] shrink-0" />
+                      <p className="text-[10px] text-[#8B949E] font-bold uppercase tracking-widest leading-relaxed">
+                        CÁLCULO EXCLUI FINAIS DE SEMANA E CALENDÁRIO DE <strong>{formData.state}</strong> / <strong>{formData.unit}</strong>.
                       </p>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="pt-8 flex gap-3">
+              <div className="pt-12 flex gap-4">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                  className="flex-1 px-6 py-4 bg-[#0D1117] text-[#8B949E] border border-[#30363D] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#30363D] hover:text-white transition-all"
                 >
-                  Cancelar
+                  Descartar
                 </button>
                 <button 
                   type="submit" 
                   disabled={!formData.collaboratorId || (!isInitialBalance && metrics.calendarDays === 0) || (isInitialBalance && !formData.manualDays)}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-2 px-10 py-4 bg-[#1F6FEB] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#388BFD] transition-all shadow-lg shadow-blue-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  Salvar Movimentação
+                  Confirmar Lançamento
                 </button>
               </div>
             </form>

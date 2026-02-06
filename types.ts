@@ -2,12 +2,13 @@
 export enum RequestType {
   SALDO_INICIAL = 'Saldo Inicial',
   DESCONTO = 'Desconto do saldo de férias',
-  AGENDADAS = 'Férias agendadas'
+  AGENDADAS = 'Férias agendadas no RH'
 }
 
 export enum HolidayType {
   NACIONAL = 'Nacional',
-  ESTADUAL = 'Estadual'
+  ESTADUAL = 'Estadual',
+  MUNICIPAL = 'Municipal'
 }
 
 export enum UserRole {
@@ -38,6 +39,7 @@ export interface Holiday {
   date: string; // ISO format YYYY-MM-DD
   type: HolidayType;
   state?: string;
+  unit?: string; // Para feriados municipais/por unidade
 }
 
 export interface Collaborator {
@@ -61,7 +63,7 @@ export interface VacationRecord {
   attachmentData?: string; 
   unit: string;
   state: string;
-  observation?: string; // Campo opcional para importação
+  observation?: string; 
 }
 
 export interface ImportHistory {

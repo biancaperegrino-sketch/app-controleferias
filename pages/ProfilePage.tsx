@@ -16,112 +16,121 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ logs }) => {
   const userLogs = logs.filter(l => l.userId === user.id);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-800">Meu Perfil Corporativo</h2>
-          <p className="text-slate-500 font-medium">Identidade gerenciada via Microsoft Entra ID.</p>
+          <h2 className="text-3xl font-black text-white tracking-tight uppercase">Identidade Corporativa</h2>
+          <p className="text-[#8B949E] font-bold text-sm uppercase tracking-wider">Perfil Integrado via Microsoft 365 Entra ID</p>
         </div>
-        <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full border border-emerald-100 text-xs font-bold uppercase tracking-wider">
-          <ShieldCheck size={16} />
-          Sessão Segura Ativa
+        <div className="flex items-center gap-3 bg-emerald-950/20 text-emerald-500 px-6 py-3 rounded-2xl border border-emerald-500/30 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/5">
+          <ShieldCheck size={20} />
+          Autenticação Multifator Ativa
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden text-center p-10 relative">
-            <div className="absolute top-0 left-0 w-full h-24 bg-slate-900 -z-0"></div>
+          <div className="bg-[#161B22] rounded-[3rem] border border-[#30363D] shadow-2xl overflow-hidden text-center p-12 relative group">
+            <div className="absolute top-0 left-0 w-full h-32 bg-[#0D1117] border-b border-[#30363D]"></div>
             <div className="relative z-10">
-              <div className="h-32 w-32 rounded-3xl bg-blue-600 flex items-center justify-center text-white text-5xl font-black mx-auto mb-6 shadow-2xl shadow-blue-500/40 border-8 border-white transform hover:rotate-3 transition-transform">
+              <div className="h-40 w-40 rounded-[2.5rem] bg-[#1F6FEB] flex items-center justify-center text-white text-6xl font-black mx-auto mb-8 shadow-[0_24px_48px_-12px_rgba(31,111,235,0.4)] border-[12px] border-[#161B22] group-hover:rotate-6 transition-transform">
                 {user.name.charAt(0)}
               </div>
-              <h3 className="text-xl font-black text-slate-900">{user.name}</h3>
-              <p className="text-sm font-bold text-blue-600 mt-1 uppercase tracking-widest">{user.role}</p>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tight leading-none">{user.name}</h3>
+              <p className="text-xs font-black text-[#1F6FEB] mt-4 uppercase tracking-[0.3em] bg-[#1F6FEB]/10 py-2 px-4 rounded-xl inline-block border border-[#1F6FEB]/20">{user.role}</p>
               
-              <div className="mt-8 pt-8 border-t border-slate-100 flex flex-col gap-4">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-bold uppercase">Microsoft ID</span>
-                  <span className="font-mono bg-slate-100 px-2 py-1 rounded text-slate-600">{user.id}</span>
+              <div className="mt-12 pt-10 border-t border-[#30363D] space-y-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#484F58] font-black uppercase tracking-widest text-[9px]">Microsoft Account ID</span>
+                  <span className="font-mono bg-[#0D1117] px-3 py-1.5 rounded-xl text-[#8B949E] text-[10px] border border-[#30363D]">{user.id}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-bold uppercase">Status</span>
-                  <span className="text-emerald-600 font-black uppercase tracking-widest">Ativo</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#484F58] font-black uppercase tracking-widest text-[9px]">Status de Acesso</span>
+                  <span className="text-emerald-500 font-black uppercase tracking-[0.2em] text-[10px] flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                    VERIFICADO
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-              <Key size={20} className="text-blue-600" />
-              <h4 className="font-black text-slate-800 uppercase tracking-widest text-sm">Detalhes da Identidade</h4>
+        <div className="lg:col-span-2 space-y-10">
+          <div className="bg-[#161B22] rounded-[3rem] border border-[#30363D] shadow-2xl overflow-hidden">
+            <div className="px-10 py-8 border-b border-[#30363D] bg-[#0D1117]/50 flex items-center gap-4">
+              <div className="h-10 w-10 bg-[#30363D] rounded-xl flex items-center justify-center text-[#1F6FEB]">
+                <Key size={22} />
+              </div>
+              <h4 className="font-black text-white uppercase tracking-[0.2em] text-[11px]">Metadados da Conta Corporativa</h4>
             </div>
-            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-slate-400 mb-1">
-                  <Mail size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">E-mail Corporativo</span>
+            <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-[#484F58]">
+                  <Mail size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Diretório de E-mail</span>
                 </div>
-                <p className="text-base font-bold text-slate-700">{user.email}</p>
+                <p className="text-base font-bold text-white uppercase tracking-tight">{user.email}</p>
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-slate-400 mb-1">
-                  <Building size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Unidade / Departamento</span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-[#484F58]">
+                  <Building size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Departamento Atribuído</span>
                 </div>
-                <p className="text-base font-bold text-slate-700">{user.unit}</p>
+                <p className="text-base font-bold text-white uppercase tracking-tight">{user.unit}</p>
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-slate-400 mb-1">
-                  <Shield size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Permissões de Acesso</span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-[#484F58]">
+                  <Shield size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Nível de Privilégio</span>
                 </div>
-                <p className="text-base font-bold text-slate-700">{user.role}</p>
+                <p className="text-base font-bold text-[#1F6FEB] uppercase tracking-tight">{user.role}</p>
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-slate-400 mb-1">
-                  <History size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Provedor</span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-[#484F58]">
+                  <History size={16} />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Autoridade SSO</span>
                 </div>
-                <p className="text-base font-bold text-slate-700">Microsoft 365 Entra ID</p>
+                <p className="text-base font-bold text-white uppercase tracking-tight">MICROSOFT AZURE ENTRA</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div className="flex items-center gap-3">
-                <History size={20} className="text-slate-400" />
-                <h4 className="font-black text-slate-800 uppercase tracking-widest text-sm">Registro de Atividades</h4>
+          <div className="bg-[#161B22] rounded-[3rem] border border-[#30363D] shadow-2xl overflow-hidden">
+            <div className="px-10 py-8 border-b border-[#30363D] bg-[#0D1117]/50 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-[#30363D] rounded-xl flex items-center justify-center text-[#8B949E]">
+                  <History size={22} />
+                </div>
+                <h4 className="font-black text-white uppercase tracking-[0.2em] text-[11px]">Trilha de Auditoria Individual</h4>
               </div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Auditoria de Segurança</span>
+              <span className="text-[9px] text-[#484F58] font-black uppercase tracking-[0.3em]">Registro em Tempo Real</span>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="bg-[#0D1117] text-[#8B949E] font-black uppercase tracking-[0.2em] text-[10px]">
                   <tr>
-                    <th className="px-8 py-4">Ação Realizada</th>
-                    <th className="px-8 py-4">Carimbo de Data/Hora</th>
+                    <th className="px-10 py-5">Atividade Monitorada</th>
+                    <th className="px-10 py-5">Carimbo de Data/Hora</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {userLogs.slice(0, 15).map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-5 font-bold text-slate-700">{log.action}</td>
-                      <td className="px-8 py-5 text-slate-400 flex items-center gap-2 tabular-nums">
-                        <Clock size={14} />
+                <tbody className="divide-y divide-[#30363D]">
+                  {userLogs.slice(0, 10).map((log) => (
+                    <tr key={log.id} className="hover:bg-[#1F6FEB]/5 transition-colors">
+                      <td className="px-10 py-6 font-bold text-white uppercase tracking-tight text-xs">{log.action}</td>
+                      <td className="px-10 py-6 text-[#8B949E] flex items-center gap-3 tabular-nums font-bold text-xs">
+                        <Clock size={16} className="text-[#30363D]" />
                         {new Date(log.timestamp).toLocaleString('pt-BR')}
                       </td>
                     </tr>
                   ))}
                   {userLogs.length === 0 && (
                     <tr>
-                      <td colSpan={2} className="px-8 py-16 text-center">
-                        <History size={48} className="mx-auto text-slate-200 mb-4" />
-                        <p className="text-slate-400 font-medium italic">Nenhuma ação registrada nesta sessão.</p>
+                      <td colSpan={2} className="px-10 py-20 text-center">
+                        <div className="flex flex-col items-center gap-4 opacity-20">
+                          <History size={48} className="text-[#30363D]" />
+                          <p className="font-black uppercase tracking-[0.3em] text-[10px]">Nenhum registro de auditoria disponível</p>
+                        </div>
                       </td>
                     </tr>
                   )}

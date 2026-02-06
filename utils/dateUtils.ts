@@ -10,13 +10,19 @@ export const getHolidaysInRange = (
   start: Date,
   end: Date,
   state: string,
+  unit: string,
   holidays: Holiday[]
 ): Holiday[] => {
   return holidays.filter(h => {
     const hDate = new Date(h.date + 'T00:00:00');
     const isWithinRange = hDate >= start && hDate <= end;
-    const isRelevant = h.type === HolidayType.NACIONAL || h.state === state;
-    return isWithinRange && isRelevant;
+    
+    // Regra de relevância do feriado
+    const isNational = h.type === HolidayType.NACIONAL;
+    const isStateRelevant = h.type === HolidayType.ESTADUAL && h.state === state;
+    const isUnitRelevant = h.type === HolidayType.MUNICIPAL && h.unit === unit;
+    
+    return isWithinRange && (isNational || isStateRelevant || isUnitRelevant);
   });
 };
 
@@ -24,6 +30,7 @@ export const calculateVacationMetrics = (
   startDateStr: string,
   endDateStr: string,
   state: string,
+  unit: string,
   holidays: Holiday[]
 ) => {
   if (!startDateStr || !endDateStr) return { calendarDays: 0, businessDays: 0, holidaysCount: 0 };
@@ -33,12 +40,12 @@ export const calculateVacationMetrics = (
   
   if (end < start) return { calendarDays: 0, businessDays: 0, holidaysCount: 0 };
 
-  // Calendar days: end - start + 1
+  // Dias corridos
   const diffTime = Math.abs(end.getTime() - start.getTime());
   const calendarDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
   let businessDays = 0;
-  const holidaysInRange = getHolidaysInRange(start, end, state, holidays);
+  const holidaysInRange = getHolidaysInRange(start, end, state, unit, holidays);
   const holidayDates = new Set(holidaysInRange.map(h => h.date));
 
   const current = new Date(start);
@@ -47,6 +54,7 @@ export const calculateVacationMetrics = (
     const isWknd = isWeekend(current);
     const isHol = holidayDates.has(dateStr);
 
+    // Dias úteis = Dias corridos - sábados - domingos - feriados (não coincidentes com fins de semana)
     if (!isWknd && !isHol) {
       businessDays++;
     }

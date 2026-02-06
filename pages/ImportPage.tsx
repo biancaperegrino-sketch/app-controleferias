@@ -93,7 +93,7 @@ const ImportPage: React.FC<ImportPageProps> = ({ collaborators, setCollaborators
     const cleanText = text.replace(/^\uFEFF/, '');
     const lines = cleanText.split(/\r?\n/).filter(line => line.trim() !== '');
     if (lines.length < 2) {
-      setColumnMappingError("O arquivo parece estar vazio ou sem dados.");
+      setColumnMappingError("O arquivo parece estar vazio.");
       return;
     }
 
@@ -120,7 +120,7 @@ const ImportPage: React.FC<ImportPageProps> = ({ collaborators, setCollaborators
     };
 
     if (map.nome === -1) {
-      setColumnMappingError("Não encontramos a coluna 'Nome'. Verifique o cabeçalho do arquivo.");
+      setColumnMappingError("Coluna 'Nome' não encontrada.");
       return;
     }
 
@@ -183,16 +183,8 @@ const ImportPage: React.FC<ImportPageProps> = ({ collaborators, setCollaborators
       const normalizedEnd = normalizeDate(record.fim);
 
       if (!isInitial) {
-        if (!normalizedStart) errors.push(`Data de início necessária`);
-        if (!normalizedEnd) errors.push(`Data de fim necessária`);
-        if (normalizedStart && normalizedEnd && new Date(normalizedStart) > new Date(normalizedEnd)) {
-          errors.push("Início após o Fim");
-        }
-      } else {
-        const saldo = parseNumber(record.saldo_inicial || '0');
-        if (saldo <= 0 && parseNumber(record.dias_uteis) <= 0) {
-          errors.push("Saldo inicial deve ser > 0");
-        }
+        if (!normalizedStart) errors.push(`Início obrigatório`);
+        if (!normalizedEnd) errors.push(`Fim obrigatório`);
       }
 
       if (!matchedType) {
@@ -270,218 +262,118 @@ const ImportPage: React.FC<ImportPageProps> = ({ collaborators, setCollaborators
       status: 'Sucesso'
     });
     
-    addLog(`Importação de ${validRows.length} registros concluída.`);
-    
     setIsProcessing(false);
     setFile(null);
     setRawRecords([]);
     setIsValidated(false);
-    alert(`Sucesso! ${validRows.length} registros importados.`);
+    alert(`Importação de dados concluída com sucesso.`);
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">Importar Dados Históricos</h2>
-          <p className="text-slate-500 font-medium italic">Migração de registros FGV DO via Planilha</p>
+          <h2 className="text-3xl font-black text-white tracking-tight uppercase">Módulo de Importação</h2>
+          <p className="text-[#8B949E] font-bold text-sm uppercase tracking-wider">Migração Massiva de Registros Históricos</p>
         </div>
         {!isAdmin && (
-          <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl border border-amber-100 text-xs font-bold uppercase flex items-center gap-2">
-            <ShieldAlert size={16} />
-            Acesso Restrito ao Administrador
+          <div className="bg-amber-950/20 text-amber-500 px-6 py-3 rounded-2xl border border-amber-500/30 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3">
+            <ShieldAlert size={18} />
+            RESTRITO A ADMINISTRADORES
           </div>
         )}
       </header>
 
       {columnMappingError && (
-        <div className="bg-rose-50 border-2 border-rose-200 p-4 rounded-2xl flex items-start gap-3 animate-in slide-in-from-top-2">
-          <AlertTriangle className="text-rose-600 shrink-0" size={20} />
+        <div className="bg-rose-950/20 border border-rose-500/30 p-6 rounded-3xl flex items-start gap-4 animate-in slide-in-from-top-4">
+          <AlertTriangle className="text-rose-500 shrink-0" size={24} />
           <div>
-            <p className="font-bold text-rose-900 text-sm">Erro na estrutura do arquivo</p>
-            <p className="text-rose-700 text-xs mt-1">{columnMappingError}</p>
+            <p className="font-black text-rose-500 text-xs uppercase tracking-widest">Inconsistência Estrutural Detectada</p>
+            <p className="text-[#8B949E] text-xs mt-2 font-bold uppercase tracking-tight leading-relaxed">{columnMappingError}</p>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-1 space-y-6">
-          <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+        <div className="xl:col-span-1 space-y-8">
+          <div className="bg-[#161B22] p-10 rounded-[2.5rem] border border-[#30363D] shadow-xl space-y-10">
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-[#1F6FEB]/10 text-[#1F6FEB] rounded-2xl flex items-center justify-center border border-[#1F6FEB]/20">
                   <Download size={20} />
                 </div>
-                <h3 className="font-black text-slate-800 uppercase tracking-widest text-sm">1. Preparação</h3>
+                <h3 className="font-black text-white uppercase tracking-widest text-[11px]">1. Obter Modelo Fiscal</h3>
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                Utilize o cabeçalho padrão. O sistema buscará as colunas por nome automaticamente. Saldo inicial não requer datas.
-              </p>
-              <button 
-                onClick={downloadTemplate}
-                className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-slate-50 border-2 border-slate-100 hover:border-blue-600 hover:bg-blue-50 rounded-2xl transition-all font-black text-slate-700 group text-xs uppercase tracking-widest"
-              >
-                <FileSpreadsheet size={18} className="text-slate-400 group-hover:text-blue-600" />
-                Baixar Modelo Oficial
+              <button onClick={downloadTemplate} className="w-full flex items-center justify-center gap-3 px-6 py-5 bg-[#0D1117] border border-[#30363D] hover:border-[#1F6FEB] hover:bg-[#1F6FEB]/5 rounded-2xl transition-all font-black text-[#8B949E] hover:text-white text-[10px] uppercase tracking-[0.2em]">
+                <FileSpreadsheet size={18} />
+                Baixar Template CSV
               </button>
             </div>
 
-            <div className="h-px bg-slate-100"></div>
-
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="space-y-10">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 bg-[#30363D] text-white rounded-2xl flex items-center justify-center">
                   <FileUp size={20} />
                 </div>
-                <h3 className="font-black text-slate-800 uppercase tracking-widest text-sm">2. Upload</h3>
+                <h3 className="font-black text-white uppercase tracking-widest text-[11px]">2. Upload e Processamento</h3>
               </div>
               
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className={`
-                  relative border-2 border-dashed rounded-[2rem] p-8 text-center cursor-pointer transition-all
-                  ${file ? 'bg-emerald-50 border-emerald-400' : 'bg-slate-50 border-slate-200 hover:border-blue-400 hover:bg-slate-100'}
-                `}
-              >
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  className="hidden" 
-                  accept=".csv" 
-                  onChange={handleFileChange}
-                />
-                <div className="space-y-3">
-                  <div className={`mx-auto h-12 w-12 rounded-xl flex items-center justify-center ${file ? 'bg-emerald-400 text-white shadow-lg' : 'bg-white shadow-sm text-slate-400'}`}>
-                    {file ? <CheckCircle2 size={24} /> : <FileUp size={24} />}
+              <div onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-[2.5rem] p-12 text-center cursor-pointer transition-all ${file ? 'bg-emerald-950/10 border-emerald-500/40' : 'bg-[#0D1117] border-[#30363D] hover:border-[#1F6FEB]'}`}>
+                <input type="file" ref={fileInputRef} className="hidden" accept=".csv" onChange={handleFileChange} />
+                <div className="space-y-5">
+                  <div className={`mx-auto h-20 w-20 rounded-[2rem] flex items-center justify-center border transition-all ${file ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-[#161B22] text-[#484F58] border-[#30363D]'}`}>
+                    <FileUp size={32} />
                   </div>
-                  <div>
-                    <p className="font-bold text-slate-700 text-sm">
-                      {file ? file.name : 'Clique para carregar'}
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-1 uppercase font-black tracking-widest">
-                      CSV com ";" ou ","
-                    </p>
-                  </div>
+                  <p className="font-black text-white text-xs uppercase tracking-widest truncate max-w-full px-4">{file ? file.name : 'CLIQUE PARA SELECIONAR CSV'}</p>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <button 
-                  onClick={validateData}
-                  disabled={!file || isProcessing || !!columnMappingError}
-                  className="flex-1 py-4 bg-white text-slate-900 border-2 border-slate-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
-                >
-                  Validar
-                </button>
-                <button 
-                  onClick={processImport}
-                  disabled={!isValidated || rawRecords.some(r => !r.isValid) || isProcessing}
-                  className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
-                >
-                  {isProcessing ? <Loader2 className="animate-spin" size={16} /> : 'Importar'}
-                </button>
+              <div className="flex gap-4">
+                <button onClick={validateData} disabled={!file || isProcessing} className="flex-1 py-5 bg-[#0D1117] text-[#8B949E] border border-[#30363D] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#30363D] hover:text-white transition-all">Validar Dados</button>
+                <button onClick={processImport} disabled={!isValidated || isProcessing} className="flex-1 py-5 bg-[#1F6FEB] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#388BFD] transition-all shadow-lg shadow-blue-500/20">Iniciar Migração</button>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm space-y-4">
-            <h3 className="font-black text-slate-400 uppercase tracking-widest text-[10px] flex items-center gap-2">
-              <History size={14} /> Histórico Recente
-            </h3>
-            <div className="space-y-3">
-              {importHistory.map(h => (
-                <div key={h.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-black text-slate-700 truncate">{h.fileName}</p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">{new Date(h.date).toLocaleDateString('pt-BR')} • {h.recordsCount} itens</p>
-                  </div>
-                  <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
-                </div>
-              ))}
-              {importHistory.length === 0 && <p className="text-[10px] text-slate-400 italic text-center">Nenhuma importação.</p>}
             </div>
           </div>
         </div>
 
         <div className="xl:col-span-2">
-          <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden h-full flex flex-col">
-            <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Info size={16} className="text-blue-500" />
-                <h4 className="font-black text-slate-800 uppercase tracking-widest text-xs">Pré-visualização e Diagnóstico</h4>
-              </div>
-              {isValidated && (
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-                      {rawRecords.filter(r => r.isValid).length} Ok
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-500">
-                      {rawRecords.filter(r => !r.isValid).length} Erros
-                    </span>
-                  </div>
-                </div>
-              )}
+          <div className="bg-[#161B22] rounded-[2.5rem] border border-[#30363D] shadow-xl overflow-hidden h-full flex flex-col">
+            <div className="px-10 py-6 border-b border-[#30363D] bg-[#0D1117]/50 flex justify-between items-center">
+              <h4 className="font-black text-white uppercase tracking-[0.2em] text-[10px]">Diagnóstico de Pré-Importação</h4>
+              {isValidated && <span className="text-[10px] font-black uppercase text-emerald-500 tabular-nums">{rawRecords.filter(r => r.isValid).length} REGISTROS VÁLIDOS</span>}
             </div>
-
             <div className="flex-1 overflow-auto max-h-[600px]">
-              <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-slate-50/80 sticky top-0 z-10 text-slate-400 font-black uppercase tracking-widest">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-[#0D1117] sticky top-0 z-10 text-[10px] font-black uppercase text-[#8B949E] tracking-[0.2em]">
                   <tr>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Colaborador</th>
-                    <th className="px-6 py-4">Tipo</th>
-                    <th className="px-6 py-4">Datas</th>
-                    <th className="px-6 py-4 text-center">Valor/Úteis</th>
+                    <th className="px-8 py-5">Status</th>
+                    <th className="px-8 py-5">Colaborador Identificado</th>
+                    <th className="px-8 py-5">Evento</th>
+                    <th className="px-8 py-5 text-right">Valor Líquido</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#30363D]">
                   {rawRecords.map((record, i) => (
-                    <tr key={i} className={`hover:bg-slate-50/50 transition-colors ${!record.isValid && isValidated ? 'bg-rose-50/30' : ''}`}>
-                      <td className="px-6 py-4">
-                        {!isValidated ? (
-                          <div className="h-4 w-4 bg-slate-100 rounded"></div>
-                        ) : record.isValid ? (
-                          <div className="h-5 w-5 bg-emerald-100 text-emerald-600 rounded flex items-center justify-center">
-                            <CheckCircle2 size={12} />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 text-rose-600 font-bold uppercase text-[9px]">
-                            <AlertCircle size={14} />
-                            <span className="max-w-[120px] truncate" title={record.errors?.join(', ')}>
-                              {record.errors?.[0]}
-                            </span>
-                          </div>
-                        )}
+                    <tr key={i} className="hover:bg-[#1F6FEB]/5 transition-colors">
+                      <td className="px-8 py-5">{record.isValid ? <CheckCircle2 size={16} className="text-emerald-500" /> : <AlertCircle size={16} className="text-rose-500" />}</td>
+                      <td className="px-8 py-5 font-bold text-white uppercase tracking-tight">{record.nome}</td>
+                      <td className="px-8 py-5">
+                         <span className="text-[9px] font-black uppercase text-[#8B949E] tracking-widest">{record.tipo}</span>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`font-bold ${!record.isValid && isValidated ? 'text-rose-600' : 'text-slate-900'}`}>
-                          {record.nome || 'Vazio'}
-                        </span>
-                        <p className="text-[9px] text-slate-400 uppercase font-bold mt-0.5">{record.funcao}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] font-black uppercase bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">
-                          {record.tipo}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-500 font-mono">
-                        {record.tipo === RequestType.SALDO_INICIAL ? '-' : `${record.inicio} → ${record.fim}`}
-                      </td>
-                      <td className="px-6 py-4 text-center font-black text-slate-900">
+                      <td className="px-8 py-5 font-black text-right text-white tabular-nums">
                         {record.tipo === RequestType.SALDO_INICIAL ? (record.saldo_inicial || record.dias_uteis) : record.dias_uteis}
                       </td>
                     </tr>
                   ))}
                   {rawRecords.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-20 text-center">
-                        <FileSpreadsheet size={48} className="mx-auto text-slate-100 mb-4" />
-                        <p className="text-slate-300 font-black uppercase tracking-widest text-[10px]">Planilha Pendente</p>
+                      <td colSpan={4} className="px-8 py-40 text-center">
+                        <div className="flex flex-col items-center gap-6 opacity-20">
+                           <div className="h-20 w-20 bg-[#0D1117] rounded-3xl border border-[#30363D] flex items-center justify-center">
+                              <FileSpreadsheet size={40} className="text-[#8B949E]" />
+                           </div>
+                           <p className="font-black uppercase tracking-[0.4em] text-[10px]">Aguardando processamento de arquivo CSV</p>
+                        </div>
                       </td>
                     </tr>
                   )}

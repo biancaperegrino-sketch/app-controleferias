@@ -39,8 +39,8 @@ const Dashboard: React.FC<DashboardProps> = ({ collaborators, records, holidays 
         .filter(r => r.type === RequestType.AGENDADAS)
         .reduce((sum, r) => sum + r.businessDays, 0);
       
-      const availableBeforeSchedule = initial - discounts;
-      const currentBalance = availableBeforeSchedule - scheduled;
+      // NOVA FÓRMULA: Saldo atual = Saldo inicial + Férias agendadas no RH – Descontos de férias
+      const currentBalance = initial + scheduled - discounts;
 
       return {
         ...record,
@@ -86,11 +86,11 @@ const Dashboard: React.FC<DashboardProps> = ({ collaborators, records, holidays 
   const uniqueUnits = Array.from(new Set(collaborators.map(c => c.unit)));
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <header className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">Visão Geral de Férias</h2>
-          <p className="text-slate-500 font-medium">Controle e monitoramento de saldos da Diretoria de Operações.</p>
+          <h2 className="text-3xl font-black text-white tracking-tight uppercase">Visão Geral</h2>
+          <p className="text-[#8B949E] font-bold text-sm uppercase tracking-wider">Monitoramento de Saldos e Lançamentos</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
@@ -98,107 +98,119 @@ const Dashboard: React.FC<DashboardProps> = ({ collaborators, records, holidays 
             <>
               <button 
                 onClick={() => navigate('/collaborators')}
-                className="bg-white text-slate-700 border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                className="bg-[#161B22] text-[#8B949E] border border-[#30363D] px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#30363D] hover:text-white transition-all active:scale-95"
               >
-                <UserPlus size={18} className="text-slate-900" />
+                <UserPlus size={16} className="text-[#1F6FEB]" />
                 Incluir Colaborador
               </button>
               <button 
                 onClick={() => navigate('/vacations')}
-                className="bg-slate-900 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                className="bg-[#1F6FEB] text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#388BFD] transition-all shadow-lg shadow-blue-500/20 active:scale-95"
               >
-                <Plus size={18} />
+                <Plus size={16} />
                 Incluir Férias
               </button>
             </>
           )}
           <button 
             onClick={exportToCSV}
-            className="bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-emerald-700 transition-all shadow-lg active:scale-95"
+            className="bg-transparent text-[#1F6FEB] border border-[#1F6FEB] px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-2 hover:bg-[#1F6FEB]/10 transition-all active:scale-95"
           >
-            <Download size={18} />
+            <Download size={16} />
             Exportar CSV
           </button>
         </div>
       </header>
 
-      <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm space-y-4">
+      <div className="bg-[#161B22] p-8 rounded-[2rem] border border-[#30363D] shadow-xl space-y-6">
         <div className="flex flex-col md:flex-row items-center gap-4">
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#8B949E]" size={20} />
             <input 
               type="text" 
-              placeholder="Buscar colaborador..." 
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-all font-medium text-slate-700"
+              placeholder="PESQUISAR COLABORADOR..." 
+              className="w-full pl-14 pr-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-[1.5rem] focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none transition-all font-black text-[11px] uppercase tracking-widest text-white placeholder:text-[#484F58]"
               value={filters.search}
               onChange={e => setFilters({...filters, search: e.target.value})}
             />
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
             <select 
-              className="flex-1 md:w-48 px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-slate-500/20 outline-none font-medium text-slate-600 appearance-none cursor-pointer"
+              className="flex-1 md:w-56 px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-[1.5rem] focus:ring-2 focus:ring-[#1F6FEB]/40 outline-none font-black text-[11px] uppercase tracking-widest text-[#8B949E] appearance-none cursor-pointer"
               value={filters.unit}
               onChange={e => setFilters({...filters, unit: e.target.value})}
             >
-              <option value="">Todas Unidades</option>
+              <option value="">TODAS UNIDADES</option>
               {uniqueUnits.map(u => <option key={u} value={u}>{u}</option>)}
             </select>
             <select 
-              className="flex-1 md:w-32 px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-slate-500/20 outline-none font-medium text-slate-600 appearance-none cursor-pointer"
+              className="flex-1 md:w-36 px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-[1.5rem] focus:ring-2 focus:ring-[#1F6FEB]/40 outline-none font-black text-[11px] uppercase tracking-widest text-[#8B949E] appearance-none cursor-pointer"
               value={filters.state}
               onChange={e => setFilters({...filters, state: e.target.value})}
             >
-              <option value="">UF</option>
+              <option value="">ESTADO</option>
               {BRAZILIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-100">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider">
+        <div className="overflow-x-auto rounded-[1.5rem] border border-[#30363D]">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-[#0D1117] text-[#8B949E] font-black uppercase tracking-[0.2em] text-[10px]">
               <tr>
-                <th className="px-6 py-4">Colaborador</th>
-                <th className="px-6 py-4">Unidade/Estado</th>
-                <th className="px-6 py-4">Tipo</th>
-                <th className="px-6 py-4">Período</th>
-                <th className="px-6 py-4 text-center">Dias Úteis</th>
-                <th className="px-6 py-4 text-center">Feriados</th>
-                <th className="px-6 py-4 text-right">Saldo Atual</th>
+                <th className="px-8 py-5">Colaborador</th>
+                <th className="px-8 py-5">Unidade/UF</th>
+                <th className="px-8 py-5">Tipo de Registro</th>
+                <th className="px-8 py-5">Período</th>
+                <th className="px-8 py-5 text-center">Dias Úteis</th>
+                <th className="px-8 py-5 text-right">Saldo Atual</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#30363D]">
               {tableData.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50 transition-colors group">
-                  <td className="px-6 py-5 font-bold text-slate-900">{row.collaboratorName}</td>
-                  <td className="px-6 py-5">
+                <tr key={row.id} className="hover:bg-[#1F6FEB]/5 transition-colors group">
+                  <td className="px-8 py-6 font-bold text-white uppercase tracking-tight">{row.collaboratorName}</td>
+                  <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
-                      <span className="text-slate-600">{row.unit}</span>
-                      <span className="bg-slate-200/50 text-slate-500 px-1.5 py-0.5 rounded text-[10px] font-black uppercase">{row.state}</span>
+                      <span className="text-[#8B949E] font-bold text-xs uppercase">{row.unit}</span>
+                      <span className="bg-[#30363D] text-[#8B949E] px-2 py-0.5 rounded text-[10px] font-black uppercase border border-[#484F58]">{row.state}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-5">
+                  <td className="px-8 py-6">
                     <span className={`
-                      inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider
-                      ${row.type === RequestType.SALDO_INICIAL ? 'bg-blue-100 text-blue-700' : 
-                        row.type === RequestType.DESCONTO ? 'bg-rose-100 text-rose-700' : 
-                        'bg-emerald-100 text-emerald-700'}
+                      inline-flex items-center px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest
+                      ${row.type === RequestType.SALDO_INICIAL ? 'bg-blue-900/40 text-[#1F6FEB] border border-[#1F6FEB]/30' : 
+                        row.type === RequestType.DESCONTO ? 'bg-rose-900/40 text-rose-500 border border-rose-500/30' : 
+                        'bg-emerald-900/40 text-emerald-500 border border-emerald-500/30'}
                     `}>
                       {row.type}
                     </span>
                   </td>
-                  <td className="px-6 py-5 text-slate-500 font-medium">
-                    {formatDate(row.startDate)} <span className="text-slate-300">→</span> {formatDate(row.endDate)}
+                  <td className="px-8 py-6 text-[#8B949E] font-bold text-xs tabular-nums">
+                    {row.type === RequestType.SALDO_INICIAL && row.startDate === row.endDate ? '-' : (
+                      <div className="flex items-center gap-2">
+                        {formatDate(row.startDate)} <span className="text-[#30363D] tracking-tighter">—</span> {formatDate(row.endDate)}
+                      </div>
+                    )}
                   </td>
-                  <td className="px-6 py-5 text-center font-black text-slate-700">{row.businessDays}</td>
-                  <td className="px-6 py-5 text-center text-slate-400 font-bold">{row.holidaysCount}</td>
-                  <td className="px-6 py-5 text-right">
-                    <span className={`inline-block px-3 py-1 rounded-full font-black tabular-nums ${row.isNegative ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                      {row.isNegative ? '-' : ''}{Math.abs(row.currentBalance)} dias
+                  <td className="px-8 py-6 text-center font-black text-white tabular-nums">{row.businessDays}</td>
+                  <td className="px-8 py-6 text-right">
+                    <span className={`inline-block px-4 py-2 rounded-2xl font-black tabular-nums border ${row.isNegative ? 'bg-rose-950/30 text-rose-500 border-rose-500/30' : 'bg-emerald-950/30 text-emerald-500 border-emerald-500/30'}`}>
+                      {row.isNegative ? '-' : ''}{Math.abs(row.currentBalance)} DIAS
                     </span>
                   </td>
                 </tr>
               ))}
+              {tableData.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <Search size={48} className="text-[#30363D]" />
+                      <p className="text-[#484F58] font-black uppercase tracking-widest text-sm">Nenhum registro encontrado</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

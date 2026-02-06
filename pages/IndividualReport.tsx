@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Collaborator, VacationRecord, RequestType } from '../types';
-import { Palmtree, ArrowDownCircle, Wallet, FileText, Search, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Palmtree, ArrowDownCircle, Wallet, FileText, Search, AlertTriangle, CheckCircle2, Calculator, Info } from 'lucide-react';
 import { formatDate } from '../utils/dateUtils';
 
 interface IndividualReportProps {
@@ -30,16 +30,14 @@ const IndividualReport: React.FC<IndividualReportProps> = ({ collaborators, reco
       .filter(r => r.type === RequestType.AGENDADAS)
       .reduce((sum, r) => sum + r.businessDays, 0);
 
-    // Rule: Saldo atual = (Saldo inicial - Descontos) - Férias agendadas
-    const availableBeforeSchedule = initial - discounts;
-    const balanceResult = availableBeforeSchedule - scheduled;
+    // NOVA FÓRMULA: Saldo atual = Saldo inicial + Férias agendadas no RH – Descontos de férias
+    const balanceResult = initial + scheduled - discounts;
 
     return {
       collaborator: collab,
       initial,
       discounts,
       scheduled,
-      availableBeforeSchedule,
       balance: balanceResult,
       isNegative: balanceResult < 0,
       history: collabRecords.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
@@ -47,114 +45,123 @@ const IndividualReport: React.FC<IndividualReportProps> = ({ collaborators, reco
   }, [selectedId, collaborators, records]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10 animate-in fade-in duration-500">
       <header>
-        <h2 className="text-2xl font-bold text-slate-800">Resumo Individual</h2>
-        <p className="text-slate-500">Visualize o detalhamento de saldo e histórico por colaborador.</p>
+        <h2 className="text-3xl font-black text-white tracking-tight uppercase">Dossiê Individual</h2>
+        <p className="text-[#8B949E] font-bold text-sm uppercase tracking-wider">Histórico e Evolução de Saldo p/ Colaborador</p>
       </header>
 
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <label className="block text-sm font-medium text-slate-700 mb-2">Selecione o Colaborador</label>
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+      <div className="bg-[#161B22] p-8 rounded-[2.5rem] border border-[#30363D] shadow-xl">
+        <label className="block text-[11px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-4">Selecionar Colaborador para Auditoria</label>
+        <div className="relative max-w-xl">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#1F6FEB]" size={22} />
           <select 
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none"
+            className="w-full pl-14 pr-10 py-5 bg-[#0D1117] border border-[#30363D] rounded-3xl focus:ring-4 focus:ring-[#1F6FEB]/20 focus:border-[#1F6FEB] outline-none appearance-none font-black text-xs uppercase text-white cursor-pointer transition-all"
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
           >
-            <option value="">Selecione um funcionário...</option>
-            {collaborators.map(c => <option key={c.id} value={c.id}>{c.name} ({c.unit})</option>)}
+            <option value="">PESQUISAR FUNCIONÁRIO...</option>
+            {collaborators.map(c => <option key={c.id} value={c.id}>{c.name} — UNIDADE {c.unit}</option>)}
           </select>
         </div>
       </div>
 
       {summary && summary.collaborator ? (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 text-slate-500 mb-3">
-                <Wallet size={18} />
-                <span className="text-xs font-bold uppercase tracking-wider">Saldo Inicial</span>
+        <div className="space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="bg-[#161B22] p-8 rounded-[2rem] border border-[#30363D] shadow-lg relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#30363D] group-hover:bg-[#1F6FEB] transition-colors"></div>
+              <div className="flex items-center gap-4 text-[#8B949E] mb-5">
+                <Wallet size={20} className="group-hover:text-white transition-colors" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Saldo Inicial</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{summary.initial} <span className="text-sm font-normal text-slate-500">dias</span></p>
+              <p className="text-4xl font-black text-white tabular-nums tracking-tighter">{summary.initial} <span className="text-xs font-bold text-[#484F58] uppercase">dias</span></p>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 text-red-500 mb-3">
-                <ArrowDownCircle size={18} />
-                <span className="text-xs font-bold uppercase tracking-wider">Descontos</span>
+            
+            <div className="bg-[#161B22] p-8 rounded-[2rem] border border-[#30363D] shadow-lg relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-[#1F6FEB]/30 group-hover:bg-[#1F6FEB] transition-colors"></div>
+              <div className="flex items-center gap-4 text-[#1F6FEB] mb-5">
+                <Palmtree size={20} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Agendadas RH</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{summary.discounts} <span className="text-sm font-normal text-slate-500">dias</span></p>
+              <p className="text-4xl font-black text-white tabular-nums tracking-tighter">{summary.scheduled} <span className="text-xs font-bold text-[#484F58] uppercase">dias</span></p>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-3 text-amber-500 mb-3">
-                <Palmtree size={18} />
-                <span className="text-xs font-bold uppercase tracking-wider">Agendadas</span>
+
+            <div className="bg-[#161B22] p-8 rounded-[2rem] border border-[#30363D] shadow-lg relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-1 h-full bg-rose-500/30 group-hover:bg-rose-500 transition-colors"></div>
+              <div className="flex items-center gap-4 text-rose-500 mb-5">
+                <ArrowDownCircle size={20} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Descontos</span>
               </div>
-              <p className="text-2xl font-bold text-slate-900">{summary.scheduled} <span className="text-sm font-normal text-slate-500">dias</span></p>
+              <p className="text-4xl font-black text-white tabular-nums tracking-tighter">{summary.discounts} <span className="text-xs font-bold text-[#484F58] uppercase">dias</span></p>
             </div>
-            <div className={`p-6 rounded-xl border shadow-sm ${summary.isNegative ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
-              <div className={`flex items-center gap-3 mb-3 ${summary.isNegative ? 'text-red-600' : 'text-emerald-600'}`}>
-                {summary.isNegative ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
-                <span className="text-xs font-bold uppercase tracking-wider">Saldo Atual</span>
+
+            <div className={`p-8 rounded-[2rem] border shadow-2xl relative overflow-hidden ${summary.isNegative ? 'bg-rose-950/20 border-rose-500/30' : 'bg-emerald-950/20 border-emerald-500/30'}`}>
+              <div className={`flex items-center gap-4 mb-5 ${summary.isNegative ? 'text-rose-500' : 'text-emerald-500'}`}>
+                {summary.isNegative ? <AlertTriangle size={20} /> : <CheckCircle2 size={20} />}
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Saldo Disponível</span>
               </div>
-              <p className={`text-2xl font-bold ${summary.isNegative ? 'text-red-700' : 'text-emerald-700'}`}>
-                {summary.balance} <span className="text-sm font-normal">dias</span>
+              <p className={`text-5xl font-black tabular-nums tracking-tighter ${summary.isNegative ? 'text-rose-500' : 'text-emerald-500'}`}>
+                {summary.isNegative ? '-' : ''}{Math.abs(summary.balance)} <span className="text-xs font-bold opacity-60 uppercase">dias</span>
               </p>
-              <p className="text-[10px] mt-1 text-slate-500">
-                {summary.isNegative ? 'Excesso de agendamento' : 'Saldo disponível'}
-              </p>
+              <div className="mt-6 flex items-center gap-2 text-[9px] text-[#484F58] font-black uppercase tracking-widest">
+                 <Calculator size={12} />
+                 <span>Inicial + Agendadas - Descontos</span>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-              <h3 className="font-bold text-slate-800">Histórico Detalhado: {summary.collaborator.name}</h3>
-              <div className="text-xs text-slate-500 italic">
-                Cálculo: (Inicial ({summary.initial}) - Descontos ({summary.discounts})) - Agendadas ({summary.scheduled}) = {summary.balance}
+          <div className="bg-[#161B22] rounded-[2.5rem] border border-[#30363D] shadow-xl overflow-hidden">
+            <div className="px-10 py-8 border-b border-[#30363D] bg-[#0D1117]/50 flex justify-between items-center">
+              <div className="flex items-center gap-4">
+                 <div className="h-10 w-10 bg-[#30363D] rounded-xl flex items-center justify-center text-white">
+                    <FileText size={20} />
+                 </div>
+                 <h3 className="font-black text-white uppercase tracking-tight">Timeline de Movimentações: {summary.collaborator.name}</h3>
+              </div>
+              <div className="flex items-center gap-2 bg-[#0D1117] border border-[#30363D] px-4 py-2 rounded-xl text-[10px] text-[#8B949E] font-black uppercase tracking-widest">
+                 <Info size={14} className="text-[#1F6FEB]" />
+                 <span>{summary.history.length} Lançamentos</span>
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-500 font-medium uppercase tracking-wider">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead className="bg-[#0D1117] text-[#8B949E] font-black uppercase tracking-[0.2em] text-[10px]">
                   <tr>
-                    <th className="px-6 py-4">Tipo</th>
-                    <th className="px-6 py-4">Período</th>
-                    <th className="px-6 py-4 text-center">Dias Corridos</th>
-                    <th className="px-6 py-4 text-center">Feriados</th>
-                    <th className="px-6 py-4 text-right">Impacto</th>
+                    <th className="px-10 py-5">Categoria</th>
+                    <th className="px-10 py-5">Período Fiscal / Evento</th>
+                    <th className="px-10 py-5 text-center">Dias Corridos</th>
+                    <th className="px-10 py-5 text-center">Feriados</th>
+                    <th className="px-10 py-5 text-right">Impacto Real</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#30363D]">
                   {summary.history.map((record) => (
-                    <tr key={record.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <span className={`text-xs font-semibold ${record.type === RequestType.SALDO_INICIAL ? 'text-blue-600' : record.type === RequestType.DESCONTO ? 'text-red-600' : 'text-emerald-600'}`}>
+                    <tr key={record.id} className="hover:bg-[#1F6FEB]/5 transition-colors group">
+                      <td className="px-10 py-6">
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl border ${
+                          record.type === RequestType.SALDO_INICIAL ? 'border-blue-500/30 bg-blue-900/40 text-[#1F6FEB]' : 
+                          record.type === RequestType.DESCONTO ? 'border-rose-500/30 bg-rose-900/40 text-rose-500' : 
+                          'border-emerald-500/30 bg-emerald-900/40 text-emerald-500'}`}>
                           {record.type}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-slate-600">{formatDate(record.startDate)} - {formatDate(record.endDate)}</td>
-                      <td className="px-6 py-4 text-center">{record.calendarDays}</td>
-                      <td className="px-6 py-4 text-center text-slate-400">{record.holidaysCount}</td>
-                      <td className={`px-6 py-4 text-right font-bold text-slate-900`}>
-                        {record.businessDays}
+                      <td className="px-10 py-6 text-[#8B949E] font-bold text-xs uppercase tracking-tight tabular-nums">
+                        {record.type === RequestType.SALDO_INICIAL && record.startDate === record.endDate ? '-' : `${formatDate(record.startDate)} — ${formatDate(record.endDate)}`}
+                      </td>
+                      <td className="px-10 py-6 text-center font-black text-white tabular-nums">{record.calendarDays}</td>
+                      <td className="px-10 py-6 text-center text-[#484F58] font-black tabular-nums">{record.holidaysCount}</td>
+                      <td className={`px-10 py-6 text-right font-black text-base tabular-nums ${record.type === RequestType.DESCONTO ? 'text-rose-500' : 'text-white'}`}>
+                        {record.type === RequestType.DESCONTO ? '-' : ''}{record.businessDays}
                       </td>
                     </tr>
                   ))}
-                  {summary.history.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-500">Nenhuma movimentação para este colaborador.</td>
-                    </tr>
-                  )}
                 </tbody>
-                <tfoot className="bg-slate-50 border-t border-slate-100">
+                <tfoot className="bg-[#0D1117] border-t border-[#30363D]">
                   <tr>
-                    <td colSpan={4} className="px-6 py-4 text-right font-medium text-slate-500">Saldo Disponível Antes do Agendamento:</td>
-                    <td className="px-6 py-4 text-right font-bold text-slate-900">{summary.availableBeforeSchedule} dias</td>
-                  </tr>
-                  <tr>
-                    <td colSpan={4} className="px-6 py-4 text-right font-medium text-slate-500">Saldo Final (Disponível - Agendadas):</td>
-                    <td className={`px-6 py-4 text-right font-black text-lg ${summary.isNegative ? 'text-red-600' : 'text-emerald-600'}`}>
-                      {summary.balance} dias
+                    <td colSpan={4} className="px-10 py-8 text-right text-[#484F58] font-black uppercase text-[10px] tracking-[0.3em]">Posição Consolidada:</td>
+                    <td className={`px-10 py-8 text-right text-4xl font-black tabular-nums tracking-tighter ${summary.isNegative ? 'text-rose-500' : 'text-emerald-500'}`}>
+                      {summary.isNegative ? '-' : ''}{Math.abs(summary.balance)} <span className="text-xs uppercase font-bold opacity-50">dias</span>
                     </td>
                   </tr>
                 </tfoot>
@@ -163,9 +170,14 @@ const IndividualReport: React.FC<IndividualReportProps> = ({ collaborators, reco
           </div>
         </div>
       ) : (
-        <div className="bg-slate-100 py-16 text-center rounded-xl border-2 border-dashed border-slate-200">
-          <FileText className="mx-auto text-slate-300 mb-4" size={48} />
-          <p className="text-slate-500">Selecione um colaborador para visualizar seu relatório detalhado.</p>
+        <div className="bg-[#161B22] py-40 text-center rounded-[3rem] border-4 border-dashed border-[#30363D] flex flex-col items-center justify-center gap-6 group">
+          <div className="h-24 w-24 bg-[#0D1117] rounded-[2rem] border border-[#30363D] flex items-center justify-center text-[#30363D] group-hover:text-[#1F6FEB] group-hover:border-[#1F6FEB]/40 transition-all">
+             <FileText size={48} />
+          </div>
+          <div className="space-y-2">
+            <p className="text-white font-black uppercase tracking-[0.3em] text-sm">Painel de Auditoria Individual</p>
+            <p className="text-[#484F58] font-bold uppercase tracking-widest text-[10px]">Selecione um colaborador no menu acima para iniciar</p>
+          </div>
         </div>
       )}
     </div>

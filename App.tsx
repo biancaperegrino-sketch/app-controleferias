@@ -138,7 +138,7 @@ const App: React.FC = () => {
           <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
           <Route path="/*" element={
             user ? (
-              <div className="flex min-h-screen bg-slate-50">
+              <div className="flex min-h-screen bg-[#0D1117]">
                 <Sidebar />
                 <main className="flex-1 flex flex-col md:ml-64">
                   <Header />
@@ -181,20 +181,20 @@ const App: React.FC = () => {
 const Header: React.FC = () => {
   const { user } = useAuth();
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-10">
+    <header className="h-16 bg-[#161B22] border-b border-[#30363D] flex items-center justify-between px-6 sticky top-0 z-10 shadow-md">
       <div className="flex items-center gap-2">
-        <ShieldCheck className="text-slate-900 md:hidden" size={20} />
-        <h1 className="text-lg font-bold text-slate-800 truncate max-w-[200px] sm:max-w-none">
-          Diretoria de Operações
+        <ShieldCheck className="text-[#1F6FEB] md:hidden" size={20} />
+        <h1 className="text-lg font-black text-white tracking-tight truncate max-w-[200px] sm:max-w-none uppercase">
+          DIRETORIA DE OPERAÇÕES
         </h1>
       </div>
       <div className="flex items-center gap-4 ml-auto">
         <div className="text-right hidden sm:block">
-          <p className="text-sm font-bold text-slate-900 leading-none">{user?.name}</p>
-          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">{user?.role}</p>
+          <p className="text-sm font-bold text-white leading-none">{user?.name}</p>
+          <p className="text-[10px] text-[#8B949E] font-bold uppercase tracking-wider mt-1">{user?.role}</p>
         </div>
-        <Link to="/profile" className="h-9 w-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-900 font-bold hover:bg-slate-200 transition-all overflow-hidden shadow-sm">
-          {user?.avatarUrl ? <img src={user.avatarUrl} alt="User" /> : user?.name.charAt(0)}
+        <Link to="/profile" className="h-9 w-9 rounded-full bg-[#30363D] border border-[#484F58] flex items-center justify-center text-white font-bold hover:bg-[#1F6FEB] transition-all overflow-hidden shadow-sm">
+          {user?.avatarUrl ? <img src={user.avatarUrl} alt="User" className="h-full w-full object-cover" /> : user?.name.charAt(0)}
         </Link>
       </div>
     </header>
@@ -208,7 +208,7 @@ const Sidebar: React.FC = () => {
 
   const navItems = [
     { label: 'Visão Geral', icon: LayoutDashboard, path: '/' },
-    { label: 'Dashboard', icon: BarChart3, path: '/analytics' },
+    { label: 'Indicadores', icon: BarChart3, path: '/analytics' },
     { label: 'Colaboradores', icon: Users, path: '/collaborators' },
     { label: 'Gestão de Férias', icon: Palmtree, path: '/vacations' },
     { label: 'Resumo Individual', icon: FileText, path: '/report' },
@@ -220,35 +220,34 @@ const Sidebar: React.FC = () => {
     <>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed bottom-6 right-6 z-50 bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:bg-slate-800 transition-all active:scale-95"
+        className="md:hidden fixed bottom-6 right-6 z-50 bg-[#1F6FEB] text-white p-4 rounded-full shadow-2xl hover:bg-[#388BFD] transition-all active:scale-95"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 transition-transform duration-300 transform
+        fixed inset-y-0 left-0 z-40 w-64 bg-[#161B22] text-[#8B949E] border-r border-[#30363D] transition-transform duration-300 transform
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="p-6 h-full flex flex-col">
           <div className="mb-10 px-2 flex flex-col gap-4">
-            {/* Logo Atualizada FGV DO */}
-            <div className="bg-white p-3 rounded-2xl shadow-lg mb-2">
+            <div className="bg-white p-3 rounded-2xl shadow-lg mb-2 flex items-center justify-center">
               <img 
                 src="https://raw.githubusercontent.com/filipe-fgv/logos/main/fgv-do-logo.png" 
                 alt="FGV DO" 
-                className="h-10 w-auto object-contain mx-auto"
+                className="h-10 w-auto object-contain"
                 onError={(e) => {
                   e.currentTarget.src = "https://logodownload.org/wp-content/uploads/2014/10/fgv-logo-1.png";
                 }}
               />
             </div>
             <div className="flex items-center gap-3 text-white">
-              <div className="bg-white/10 p-1.5 rounded-lg">
-                <ShieldCheck size={18} className="text-white" />
+              <div className="bg-[#30363D] p-1.5 rounded-lg">
+                <ShieldCheck size={18} className="text-[#1F6FEB]" />
               </div>
               <div>
-                <span className="text-sm font-black tracking-tight block leading-none">Operações</span>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em]">Controle de Férias</span>
+                <span className="text-sm font-black tracking-tight block leading-none uppercase">Operações</span>
+                <span className="text-[9px] font-bold text-[#8B949E] uppercase tracking-[0.15em]">Gestão de Férias</span>
               </div>
             </div>
           </div>
@@ -265,8 +264,8 @@ const Sidebar: React.FC = () => {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all
                     ${isActive 
-                      ? 'bg-white text-slate-900 shadow-lg translate-x-1' 
-                      : 'hover:bg-slate-800 hover:text-white'}
+                      ? 'bg-[#1F6FEB] text-white shadow-lg shadow-blue-500/20 translate-x-1' 
+                      : 'hover:bg-[#30363D] hover:text-white'}
                   `}
                 >
                   <Icon size={18} />
@@ -276,26 +275,26 @@ const Sidebar: React.FC = () => {
             })}
           </nav>
 
-          <div className="mt-auto pt-6 border-t border-slate-800 space-y-1">
-            <div className="px-4 py-3 mb-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+          <div className="mt-auto pt-6 border-t border-[#30363D] space-y-1">
+            <div className="px-4 py-3 mb-4 bg-[#0D1117] rounded-xl border border-[#30363D]">
               <div className="flex items-center gap-2 mb-2">
-                <Lock size={12} className="text-blue-400" />
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sessão Segura</span>
+                <Lock size={12} className="text-[#1F6FEB]" />
+                <span className="text-[10px] font-black text-[#8B949E] uppercase tracking-widest">Acesso Seguro</span>
               </div>
-              <p className="text-[10px] text-slate-500 leading-tight">Diretoria de Operações</p>
+              <p className="text-[10px] text-[#8B949E]/70 leading-tight">Diretoria de Operações</p>
             </div>
             
             <Link 
               to="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-[#30363D] transition-colors"
             >
               <UserIcon size={18} />
               <span>Meu Perfil</span>
             </Link>
             <button 
               onClick={logout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-red-900/20 text-red-400 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-rose-900/20 text-rose-500 transition-colors"
             >
               <LogOut size={18} />
               <span>Sair do Sistema</span>

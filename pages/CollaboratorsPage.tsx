@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Collaborator, UserRole } from '../types';
 import { BRAZILIAN_STATES } from '../constants';
-import { Search, UserPlus, X, Edit2, Trash2, ShieldAlert } from 'lucide-react';
+// Added missing Users import
+import { Search, UserPlus, X, Edit2, Trash2, ShieldAlert, Users } from 'lucide-react';
 import { useAuth } from '../App';
 
 interface CollaboratorsPageProps {
@@ -74,142 +75,163 @@ const CollaboratorsPage: React.FC<CollaboratorsPageProps> = ({ collaborators, se
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Colaboradores</h2>
-          <p className="text-slate-500">Gerencie o cadastro de funcionários.</p>
+          <h2 className="text-3xl font-black text-white tracking-tight uppercase">Base de Colaboradores</h2>
+          <p className="text-[#8B949E] font-bold text-sm uppercase tracking-wider">Gestão do Quadro de Operações</p>
         </div>
         {isAdmin ? (
           <button 
             onClick={() => handleOpenModal()}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-sm"
+            className="bg-[#1F6FEB] hover:bg-[#388BFD] text-white px-6 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
           >
             <UserPlus size={18} />
             Novo Colaborador
           </button>
         ) : (
-          <div className="bg-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 text-slate-500 text-xs font-medium">
-            <ShieldAlert size={14} />
-            Perfil de Leitura - Somente Visualização
+          <div className="bg-[#161B22] border border-[#30363D] px-4 py-3 rounded-2xl flex items-center gap-3 text-[#8B949E] text-[10px] font-black uppercase tracking-widest">
+            <ShieldAlert size={16} className="text-[#1F6FEB]" />
+            Acesso Leitura
           </div>
         )}
       </div>
 
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+      <div className="bg-[#161B22] p-6 rounded-[1.5rem] border border-[#30363D] shadow-xl">
+        <div className="relative">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#8B949E]" size={20} />
           <input 
             type="text" 
-            placeholder="Buscar por nome ou unidade..." 
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+            placeholder="PESQUISAR POR NOME OU UNIDADE..." 
+            className="w-full pl-14 pr-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-[1.2rem] focus:outline-none focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none transition-all font-black text-[11px] uppercase tracking-widest text-white placeholder:text-[#484F58]"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-slate-500 font-medium uppercase tracking-wider">
-            <tr>
-              <th className="px-6 py-4">Nome</th>
-              <th className="px-6 py-4">Função</th>
-              <th className="px-6 py-4">Unidade</th>
-              <th className="px-6 py-4">Estado</th>
-              {isAdmin && <th className="px-6 py-4 text-right">Ações</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filtered.map((collab) => (
-              <tr key={collab.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 font-medium text-slate-900">{collab.name}</td>
-                <td className="px-6 py-4 text-slate-600">{collab.role}</td>
-                <td className="px-6 py-4 text-slate-600">{collab.unit}</td>
-                <td className="px-6 py-4 text-slate-600">
-                  <span className="bg-slate-100 px-2 py-1 rounded text-xs font-bold uppercase">{collab.state}</span>
-                </td>
-                {isAdmin && (
-                  <td className="px-6 py-4 text-right flex justify-end gap-2">
-                    <button onClick={() => handleOpenModal(collab)} className="p-2 text-slate-400 hover:text-blue-600 transition-colors">
-                      <Edit2 size={16} />
-                    </button>
-                    <button onClick={() => handleDelete(collab.id, collab.name)} className="p-2 text-slate-400 hover:text-red-600 transition-colors">
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                )}
+      <div className="bg-[#161B22] rounded-[2rem] border border-[#30363D] shadow-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-[#0D1117] text-[#8B949E] font-black uppercase tracking-[0.2em] text-[10px]">
+              <tr>
+                <th className="px-8 py-5">Colaborador</th>
+                <th className="px-8 py-5">Cargo / Função</th>
+                <th className="px-8 py-5">Unidade Operacional</th>
+                <th className="px-8 py-5">UF</th>
+                {isAdmin && <th className="px-8 py-5 text-right">Ações de Gestão</th>}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#30363D]">
+              {filtered.map((collab) => (
+                <tr key={collab.id} className="hover:bg-[#1F6FEB]/5 transition-colors group">
+                  <td className="px-8 py-6 font-bold text-white uppercase tracking-tight">{collab.name}</td>
+                  <td className="px-8 py-6 text-[#8B949E] font-bold text-xs uppercase">{collab.role}</td>
+                  <td className="px-8 py-6 text-[#8B949E] font-bold text-xs uppercase tracking-tight">{collab.unit}</td>
+                  <td className="px-8 py-6">
+                    <span className="bg-[#0D1117] text-[#8B949E] px-2.5 py-1 rounded text-[10px] font-black uppercase border border-[#30363D] group-hover:border-[#1F6FEB] transition-colors">{collab.state}</span>
+                  </td>
+                  {isAdmin && (
+                    <td className="px-8 py-6 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => handleOpenModal(collab)} className="p-3 text-[#8B949E] hover:text-[#1F6FEB] hover:bg-[#30363D] rounded-xl transition-all">
+                          <Edit2 size={18} />
+                        </button>
+                        <button onClick={() => handleDelete(collab.id, collab.name)} className="p-3 text-[#8B949E] hover:text-rose-500 hover:bg-rose-900/20 rounded-xl transition-all">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center gap-4 opacity-40">
+                      <Users size={64} className="text-[#30363D]" />
+                      <p className="font-black uppercase tracking-[0.3em] text-[10px]">Nenhum colaborador cadastrado</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {isAdmin && isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h3 className="font-bold text-slate-800 text-lg">
-                {editingCollaborator ? 'Editar Colaborador' : 'Novo Colaborador'}
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#0D1117]/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#161B22] w-full max-w-lg rounded-[2.5rem] shadow-2xl border border-[#30363D] overflow-hidden animate-in zoom-in duration-200">
+            <div className="px-10 py-8 border-b border-[#30363D] flex items-center justify-between bg-[#0D1117]/50">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 bg-[#1F6FEB] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                   <UserPlus size={24} />
+                </div>
+                <h3 className="font-black text-white text-lg uppercase tracking-tight">
+                  {editingCollaborator ? 'Atualizar Perfil' : 'Novo Colaborador'}
+                </h3>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 bg-[#30363D] hover:bg-[#484F58] rounded-full flex items-center justify-center text-white transition-colors">
                 <X size={20} />
               </button>
             </div>
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
-                <input 
-                  required
-                  type="text" 
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                  value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Função</label>
-                <input 
-                  required
-                  type="text" 
-                  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                  value={formData.role}
-                  onChange={e => setFormData({...formData, role: e.target.value})}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="p-10 space-y-8">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Unidade</label>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Nome Completo</label>
                   <input 
                     required
                     type="text" 
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                    value={formData.unit}
-                    onChange={e => setFormData({...formData, unit: e.target.value})}
+                    className="w-full px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-bold text-white transition-all"
+                    value={formData.name}
+                    onChange={e => setFormData({...formData, name: e.target.value})}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
-                  <select 
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                    value={formData.state}
-                    onChange={e => setFormData({...formData, state: e.target.value})}
-                  >
-                    {BRAZILIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Cargo / Função</label>
+                  <input 
+                    required
+                    type="text" 
+                    className="w-full px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-bold text-white transition-all"
+                    value={formData.role}
+                    onChange={e => setFormData({...formData, role: e.target.value})}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Unidade</label>
+                    <input 
+                      required
+                      type="text" 
+                      className="w-full px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-bold text-white transition-all"
+                      value={formData.unit}
+                      onChange={e => setFormData({...formData, unit: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E] mb-3">Estado (UF)</label>
+                    <select 
+                      className="w-full px-6 py-4 bg-[#0D1117] border border-[#30363D] rounded-2xl focus:ring-2 focus:ring-[#1F6FEB]/40 focus:border-[#1F6FEB] outline-none font-black text-xs uppercase text-white appearance-none cursor-pointer"
+                      value={formData.state}
+                      onChange={e => setFormData({...formData, state: e.target.value})}
+                    >
+                      {BRAZILIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
                 </div>
               </div>
-              <div className="pt-4 flex gap-3">
+              <div className="pt-6 flex gap-4">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                  className="flex-1 px-6 py-4 bg-[#0D1117] text-[#8B949E] border border-[#30363D] rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#30363D] hover:text-white transition-all"
                 >
                   Cancelar
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors shadow-sm shadow-blue-500/20"
+                  className="flex-1 px-6 py-4 bg-[#1F6FEB] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#388BFD] transition-all shadow-lg shadow-blue-500/20"
                 >
                   Salvar Colaborador
                 </button>

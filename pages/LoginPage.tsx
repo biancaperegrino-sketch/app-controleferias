@@ -20,20 +20,19 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-6 font-sans relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px]"></div>
+    <div className="min-h-screen flex items-center justify-center bg-[#0D1117] p-6 font-sans relative overflow-hidden">
+      {/* Blue glow effects for depth */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#1F6FEB]/10 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#388BFD]/10 rounded-full blur-[120px]"></div>
 
       <div className="w-full max-w-[480px] relative z-10">
-        <div className="bg-white/95 backdrop-blur-md rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] overflow-hidden border border-white/20 flex flex-col">
+        <div className="bg-[#161B22] rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)] overflow-hidden border border-[#30363D] flex flex-col">
           
-          {/* Top Section with Accent Bar */}
-          <div className="h-2 bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-800"></div>
+          {/* Top Section with Branding */}
+          <div className="h-2 bg-gradient-to-r from-[#1F6FEB] to-[#388BFD]"></div>
 
-          <div className="p-10 pb-6">
-            {/* FGV Logo - Versão FGV DO Anexada */}
-            <div className="mb-10 flex justify-center">
+          <div className="p-12 pb-8">
+            <div className="mb-10 flex justify-center bg-white p-4 rounded-3xl shadow-lg">
               <img 
                 src="https://raw.githubusercontent.com/filipe-fgv/logos/main/fgv-do-logo.png" 
                 alt="FGV DO" 
@@ -44,98 +43,98 @@ const LoginPage: React.FC = () => {
               />
             </div>
 
-            {/* Title Section */}
-            <div className="text-center space-y-3">
-              <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-none">
-                Controle de <span className="text-blue-600">Férias</span>
+            <div className="text-center space-y-4">
+              <h2 className="text-4xl font-black text-white tracking-tight leading-none uppercase">
+                Controle de <span className="text-[#1F6FEB]">Saldo</span>
               </h2>
               <div className="flex items-center justify-center gap-3">
-                <div className="h-[2px] w-6 bg-blue-600/30 rounded-full"></div>
-                <h3 className="text-slate-500 font-bold uppercase tracking-[0.25em] text-[10px]">
+                <div className="h-[2px] w-8 bg-[#30363D] rounded-full"></div>
+                <h3 className="text-[#8B949E] font-black uppercase tracking-[0.3em] text-[10px]">
                   Diretoria de Operações
                 </h3>
-                <div className="h-[2px] w-6 bg-blue-600/30 rounded-full"></div>
+                <div className="h-[2px] w-8 bg-[#30363D] rounded-full"></div>
               </div>
             </div>
           </div>
 
-          <div className="px-10 pb-12 pt-4 space-y-8">
+          <div className="px-12 pb-12 pt-4 space-y-10">
             {!loading ? (
               <div className="space-y-6">
                 <div className="space-y-4">
                   <button 
                     onClick={() => handleLogin(UserRole.ADMIN)}
-                    className="w-full flex items-center justify-between bg-slate-50 border-2 border-slate-100 hover:border-blue-600 hover:bg-blue-50/30 px-6 py-5 rounded-[1.5rem] transition-all group relative overflow-hidden shadow-sm"
+                    className="w-full flex items-center justify-between bg-[#0D1117] border border-[#30363D] hover:border-[#1F6FEB] hover:bg-[#1F6FEB]/10 px-6 py-6 rounded-[1.5rem] transition-all group shadow-sm"
                   >
-                    <div className="flex items-center gap-4 relative z-10">
-                      <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-slate-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                        <Lock size={22} />
+                    <div className="flex items-center gap-5">
+                      <div className="h-14 w-14 bg-[#161B22] border border-[#30363D] rounded-2xl flex items-center justify-center text-[#8B949E] group-hover:bg-[#1F6FEB] group-hover:text-white transition-all shadow-sm">
+                        <Lock size={24} />
                       </div>
                       <div className="text-left">
-                        <span className="block text-lg font-black text-slate-800 leading-none">Administrador</span>
-                        <span className="block text-[10px] text-blue-600 mt-1.5 uppercase font-bold tracking-widest opacity-80">Acesso Total • MS 365</span>
+                        <span className="block text-xl font-black text-white leading-none uppercase">Administrador</span>
+                        <span className="block text-[10px] text-[#1F6FEB] mt-2 uppercase font-black tracking-widest opacity-80">Acesso Pleno • Microsoft 365</span>
                       </div>
                     </div>
-                    <ArrowRight size={20} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all relative z-10" />
+                    <ArrowRight size={22} className="text-[#30363D] group-hover:text-[#1F6FEB] group-hover:translate-x-1 transition-all" />
                   </button>
 
                   <button 
                     onClick={() => handleLogin(UserRole.READONLY)}
-                    className="w-full flex items-center justify-between bg-slate-50 border-2 border-slate-100 hover:border-cyan-600 hover:bg-cyan-50/30 px-6 py-5 rounded-[1.5rem] transition-all group relative overflow-hidden shadow-sm"
+                    className="w-full flex items-center justify-between bg-[#0D1117] border border-[#30363D] hover:border-[#1F6FEB] hover:bg-[#1F6FEB]/10 px-6 py-6 rounded-[1.5rem] transition-all group shadow-sm"
                   >
-                    <div className="flex items-center gap-4 relative z-10">
-                      <div className="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-slate-600 group-hover:bg-cyan-600 group-hover:text-white transition-all shadow-sm">
-                        <Globe size={22} />
+                    <div className="flex items-center gap-5">
+                      <div className="h-14 w-14 bg-[#161B22] border border-[#30363D] rounded-2xl flex items-center justify-center text-[#8B949E] group-hover:bg-[#1F6FEB] group-hover:text-white transition-all shadow-sm">
+                        <Globe size={24} />
                       </div>
                       <div className="text-left">
-                        <span className="block text-lg font-black text-slate-800 leading-none">Consulta</span>
-                        <span className="block text-[10px] text-cyan-600 mt-1.5 uppercase font-bold tracking-widest opacity-80">Acesso Leitura • MS 365</span>
+                        <span className="block text-xl font-black text-white leading-none uppercase">Consulta</span>
+                        <span className="block text-[10px] text-[#8B949E] mt-2 uppercase font-black tracking-widest opacity-80">Leitura • Microsoft 365</span>
                       </div>
                     </div>
-                    <ArrowRight size={20} className="text-slate-300 group-hover:text-cyan-600 group-hover:translate-x-1 transition-all relative z-10" />
+                    <ArrowRight size={22} className="text-[#30363D] group-hover:text-[#1F6FEB] group-hover:translate-x-1 transition-all" />
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 space-y-6">
+              <div className="flex flex-col items-center justify-center py-12 space-y-8">
                 <div className="relative">
-                  <div className="absolute inset-[-20px] bg-blue-500/20 rounded-full blur-2xl animate-pulse"></div>
-                  <Loader2 className="animate-spin text-blue-600 relative z-10" size={64} strokeWidth={2.5} />
+                  <div className="absolute inset-[-30px] bg-[#1F6FEB]/20 rounded-full blur-3xl animate-pulse"></div>
+                  <Loader2 className="animate-spin text-[#1F6FEB] relative z-10" size={72} strokeWidth={3} />
                   <div className="absolute inset-0 flex items-center justify-center relative z-20">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" className="w-6 h-6" alt="Microsoft Logo" />
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" className="w-8 h-8" alt="MS" />
                   </div>
                 </div>
                 <div className="text-center relative z-10">
-                  <p className="text-xl font-black text-slate-800 tracking-tight">Autenticando...</p>
-                  <p className="text-[11px] text-blue-600 mt-1.5 uppercase font-black tracking-[0.2em] animate-pulse">Single Sign-On Ativo</p>
+                  <p className="text-2xl font-black text-white tracking-tight uppercase">Autenticando...</p>
+                  <p className="text-[11px] text-[#1F6FEB] mt-2 uppercase font-black tracking-[0.3em] animate-pulse">Conexão Segura Ativa</p>
                 </div>
               </div>
             )}
 
-            <div className="pt-8 border-t border-slate-100 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center">
-                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" className="w-3 h-3" alt="MS" />
+            <div className="pt-10 border-t border-[#30363D] flex flex-col items-center gap-5">
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-white border-4 border-[#161B22] flex items-center justify-center">
+                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" className="w-4 h-4" alt="MS" />
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center">
-                     <ShieldCheck size={10} className="text-slate-400" />
+                  <div className="w-8 h-8 rounded-full bg-[#30363D] border-4 border-[#161B22] flex items-center justify-center">
+                     <ShieldCheck size={12} className="text-[#1F6FEB]" />
                   </div>
                 </div>
-                <span className="text-[10px] uppercase font-black tracking-[0.15em] text-slate-400">Microsoft Entra Verified</span>
+                <span className="text-[10px] uppercase font-black tracking-[0.2em] text-[#8B949E]">Microsoft Entra Verified</span>
               </div>
-              <p className="text-[10px] text-slate-400 text-center leading-relaxed px-6 font-medium">
-                Este sistema utiliza criptografia de ponta a ponta e autenticação multifator. O acesso não autorizado é estritamente proibido.
+              <p className="text-[10px] text-[#8B949E] text-center leading-relaxed px-4 font-bold uppercase opacity-60">
+                Acesso restrito a colaboradores autorizados da Fundação Getulio Vargas. 
+                O sistema utiliza criptografia de ponta a ponta.
               </p>
             </div>
           </div>
         </div>
         
-        <div className="mt-10 flex flex-col items-center gap-2">
-          <p className="text-[11px] font-black text-white/40 uppercase tracking-[0.3em]">
-            Fundação Getulio Vargas
+        <div className="mt-12 flex flex-col items-center gap-3">
+          <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em]">
+            FUNDAÇÃO GETULIO VARGAS
           </p>
-          <div className="h-1 w-12 bg-white/20 rounded-full"></div>
+          <div className="h-1.5 w-16 bg-[#30363D] rounded-full"></div>
         </div>
       </div>
     </div>
