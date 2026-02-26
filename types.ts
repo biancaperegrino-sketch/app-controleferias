@@ -13,7 +13,13 @@ export enum HolidayType {
 
 export enum UserRole {
   ADMIN = 'Administrador',
-  READONLY = 'Leitura'
+  VIEWER = 'Visualizador'
+}
+
+export interface RegisteredUser {
+  email: string;
+  role: UserRole;
+  addedAt: string;
 }
 
 export interface User {
@@ -39,7 +45,7 @@ export interface Holiday {
   date: string; // ISO format YYYY-MM-DD
   type: HolidayType;
   state?: string;
-  unit?: string; // Para feriados municipais/por unidade
+  unit?: string; 
 }
 
 export interface Collaborator {

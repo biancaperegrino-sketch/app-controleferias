@@ -15,10 +15,17 @@ import {
   History,
   Lock,
   BarChart3,
-  FileUp
+  FileUp,
+  Settings,
+  ShieldAlert,
+  ShieldX,
+  Calculator,
+  Eye,
+  LogOut as LogoutIcon,
+  ChevronRight
 } from 'lucide-react';
 
-import { Collaborator, VacationRecord, Holiday, User, UserRole, AuditLog } from './types';
+import { Collaborator, VacationRecord, Holiday, User, UserRole, AuditLog, RegisteredUser } from './types';
 import { INITIAL_COLLABORATORS, INITIAL_RECORDS, INITIAL_HOLIDAYS } from './constants';
 
 import Dashboard from './pages/Dashboard';
@@ -31,13 +38,19 @@ import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import ImportPage from './pages/ImportPage';
 
-// Auth Context
+const ROOT_ADMIN_EMAIL = 'bianca.bomfim@fgv.br';
+const DEFAULT_LOGO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 160'%3E%3Cpath d='M10 20 L100 20 L70 65 L-20 65 Z' fill='%23004b8d'/%3E%3Cpath d='M45 75 L135 75 L105 120 L15 120 Z' fill='%23009fe3'/%3E%3Ctext x='150' y='75' font-family='Arial Black, sans-serif' font-weight='900' font-size='82' letter-spacing='-4' fill='%23004b8d'%3EFGV%3C/text%3E%3Ctext x='355' y='75' font-family='Arial Black, sans-serif' font-weight='900' font-size='82' letter-spacing='-4' fill='%23009fe3'%3EDO%3C/text%3E%3C/svg%3E";
+
 interface AuthContextType {
   user: User | null;
-  login: (role: UserRole) => Promise<void>;
+  login: (email: string, password: string) => Promise<{success: boolean; message?: string}>;
   logout: () => void;
   addLog: (action: string) => void;
   isAuthenticated: boolean;
+  logo: string;
+  updateLogo: (newLogo: string) => void;
+  resetLogo: () => void;
+  registeredUsers: RegisteredUser[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -52,6 +65,19 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('vacation_user');
     return saved ? JSON.parse(saved) : null;
+  });
+
+  const [logo, setLogo] = useState<string>(() => {
+    return localStorage.getItem('app_custom_logo') || DEFAULT_LOGO;
+  });
+
+  const [registeredUsers] = useState<RegisteredUser[]>(() => {
+    const saved = localStorage.getItem('app_registered_users');
+    let list = saved ? JSON.parse(saved) : [];
+    if (!list.find((u: any) => u.email === ROOT_ADMIN_EMAIL)) {
+      list.push({ email: ROOT_ADMIN_EMAIL, role: UserRole.ADMIN, addedAt: new Date().toISOString() });
+    }
+    return list;
   });
 
   const [logs, setLogs] = useState<AuditLog[]>(() => {
@@ -74,25 +100,25 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : INITIAL_HOLIDAYS;
   });
 
-  useEffect(() => {
-    localStorage.setItem('vacation_user', JSON.stringify(user));
-  }, [user]);
+  useEffect(() => localStorage.setItem('vacation_user', JSON.stringify(user)), [user]);
+  useEffect(() => localStorage.setItem('vacation_logs', JSON.stringify(logs)), [logs]);
+  useEffect(() => localStorage.setItem('vacation_collaborators', JSON.stringify(collaborators)), [collaborators]);
+  useEffect(() => localStorage.setItem('vacation_records', JSON.stringify(records)), [records]);
+  useEffect(() => localStorage.setItem('vacation_holidays', JSON.stringify(holidays)), [holidays]);
 
-  useEffect(() => {
-    localStorage.setItem('vacation_logs', JSON.stringify(logs));
-  }, [logs]);
+  const updateLogo = (newLogo: string) => {
+    if (user?.role !== UserRole.ADMIN) return;
+    setLogo(newLogo);
+    localStorage.setItem('app_custom_logo', newLogo);
+    addLog("Atualizou a identidade visual do sistema");
+  };
 
-  useEffect(() => {
-    localStorage.setItem('vacation_collaborators', JSON.stringify(collaborators));
-  }, [collaborators]);
-
-  useEffect(() => {
-    localStorage.setItem('vacation_records', JSON.stringify(records));
-  }, [records]);
-
-  useEffect(() => {
-    localStorage.setItem('vacation_holidays', JSON.stringify(holidays));
-  }, [holidays]);
+  const resetLogo = () => {
+    if (user?.role !== UserRole.ADMIN) return;
+    setLogo(DEFAULT_LOGO);
+    localStorage.removeItem('app_custom_logo');
+    addLog("Restaurou o branding institucional padrão");
+  };
 
   const addLog = (action: string) => {
     if (!user) return;
@@ -106,33 +132,31 @@ const App: React.FC = () => {
     setLogs(prev => [newLog, ...prev].slice(0, 1000)); 
   };
 
-  const login = async (role: UserRole) => {
-    const mockUser: User = {
-      id: role === UserRole.ADMIN ? "ms-admin-9988" : "ms-user-4455",
-      name: role === UserRole.ADMIN ? "Administrador de Operações" : "Colaborador Operacional",
-      email: role === UserRole.ADMIN ? "admin.operacoes@fgv.br" : "colaborador@fgv.br",
-      unit: "FGV - Diretoria de Operações",
+  const login = async (email: string, password: string) => {
+    const lowerEmail = email.toLowerCase().trim();
+    const role = lowerEmail === ROOT_ADMIN_EMAIL ? UserRole.ADMIN : UserRole.VIEWER;
+    const loggedUser: User = {
+      id: "usr-" + Math.random().toString(36).substr(2, 6),
+      name: lowerEmail.split('@')[0].replace('.', ' ').split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' '),
+      email: lowerEmail,
+      unit: "Diretoria de Operações",
       role: role
     };
-    setUser(mockUser);
-    
-    const initialLog: AuditLog = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId: mockUser.id,
-      userName: mockUser.name,
-      action: `Realizou login via Microsoft 365 (Perfil: ${role})`,
-      timestamp: new Date().toISOString()
-    };
-    setLogs(prev => [initialLog, ...prev]);
+    setUser(loggedUser);
+    addLog(`Acesso realizado (${role})`);
+    return { success: true };
   };
 
   const logout = () => {
-    addLog("Realizou logout do sistema");
+    addLog("Logout efetuado");
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, addLog, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ 
+      user, login, logout, addLog, isAuthenticated: !!user, 
+      logo, updateLogo, resetLogo, registeredUsers
+    }}>
       <HashRouter>
         <Routes>
           <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
@@ -141,30 +165,15 @@ const App: React.FC = () => {
               <div className="flex min-h-screen bg-[#0D1117]">
                 <Sidebar />
                 <main className="flex-1 flex flex-col md:ml-64">
-                  <Header />
-                  <div className="p-4 md:p-8">
+                  <div className="p-6 md:p-10">
                     <Routes>
                       <Route path="/" element={<Dashboard collaborators={collaborators} records={records} holidays={holidays} />} />
                       <Route path="/analytics" element={<AnalyticsDashboard collaborators={collaborators} records={records} />} />
                       <Route path="/collaborators" element={<CollaboratorsPage collaborators={collaborators} setCollaborators={setCollaborators} />} />
-                      <Route path="/vacations" element={
-                        <VacationsPage 
-                          records={records} 
-                          setRecords={setRecords} 
-                          collaborators={collaborators} 
-                          holidays={holidays} 
-                        />
-                      } />
+                      <Route path="/vacations" element={<VacationsPage records={records} setRecords={setRecords} collaborators={collaborators} holidays={holidays} />} />
                       <Route path="/holidays" element={<HolidaysPage holidays={holidays} setHolidays={setHolidays} />} />
                       <Route path="/report" element={<IndividualReport collaborators={collaborators} records={records} />} />
-                      <Route path="/import" element={
-                        <ImportPage 
-                          collaborators={collaborators} 
-                          setCollaborators={setCollaborators} 
-                          records={records} 
-                          setRecords={setRecords} 
-                        />
-                      } />
+                      <Route path="/import" element={user.role === UserRole.ADMIN ? <ImportPage collaborators={collaborators} setCollaborators={setCollaborators} records={records} setRecords={setRecords} /> : <Navigate to="/" />} />
                       <Route path="/profile" element={<ProfilePage logs={logs} />} />
                     </Routes>
                   </div>
@@ -178,81 +187,45 @@ const App: React.FC = () => {
   );
 };
 
-const Header: React.FC = () => {
-  const { user } = useAuth();
-  return (
-    <header className="h-16 bg-[#161B22] border-b border-[#30363D] flex items-center justify-between px-6 sticky top-0 z-10 shadow-md">
-      <div className="flex items-center gap-2">
-        <ShieldCheck className="text-[#1F6FEB] md:hidden" size={20} />
-        <h1 className="text-lg font-black text-white tracking-tight truncate max-w-[200px] sm:max-w-none uppercase">
-          DIRETORIA DE OPERAÇÕES
-        </h1>
-      </div>
-      <div className="flex items-center gap-4 ml-auto">
-        <div className="text-right hidden sm:block">
-          <p className="text-sm font-bold text-white leading-none">{user?.name}</p>
-          <p className="text-[10px] text-[#8B949E] font-bold uppercase tracking-wider mt-1">{user?.role}</p>
-        </div>
-        <Link to="/profile" className="h-9 w-9 rounded-full bg-[#30363D] border border-[#484F58] flex items-center justify-center text-white font-bold hover:bg-[#1F6FEB] transition-all overflow-hidden shadow-sm">
-          {user?.avatarUrl ? <img src={user.avatarUrl} alt="User" className="h-full w-full object-cover" /> : user?.name.charAt(0)}
-        </Link>
-      </div>
-    </header>
-  );
-};
-
 const Sidebar: React.FC = () => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, logo } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { label: 'Visão Geral', icon: LayoutDashboard, path: '/' },
-    { label: 'Indicadores', icon: BarChart3, path: '/analytics' },
+    { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
     { label: 'Colaboradores', icon: Users, path: '/collaborators' },
-    { label: 'Gestão de Férias', icon: Palmtree, path: '/vacations' },
-    { label: 'Resumo Individual', icon: FileText, path: '/report' },
+    { label: 'Férias', icon: Palmtree, path: '/vacations' },
+    { label: 'Análises', icon: BarChart3, path: '/analytics' },
     { label: 'Feriados', icon: Calendar, path: '/holidays' },
-    { label: 'Importar Dados', icon: FileUp, path: '/import' },
   ];
 
   return (
     <>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden fixed bottom-6 right-6 z-50 bg-[#1F6FEB] text-white p-4 rounded-full shadow-2xl hover:bg-[#388BFD] transition-all active:scale-95"
+        className="md:hidden fixed top-6 right-6 z-50 bg-[#1F6FEB] text-white p-3 rounded-xl shadow-lg"
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
+        {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       <aside className={`
-        fixed inset-y-0 left-0 z-40 w-64 bg-[#161B22] text-[#8B949E] border-r border-[#30363D] transition-transform duration-300 transform
+        fixed inset-y-0 left-0 z-40 w-64 bg-[#161B22] border-r border-[#30363D] transition-transform duration-300 transform
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="p-6 h-full flex flex-col">
-          <div className="mb-10 px-2 flex flex-col gap-4">
-            <div className="bg-white p-3 rounded-2xl shadow-lg mb-2 flex items-center justify-center">
-              <img 
-                src="https://raw.githubusercontent.com/filipe-fgv/logos/main/fgv-do-logo.png" 
-                alt="FGV DO" 
-                className="h-10 w-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.src = "https://logodownload.org/wp-content/uploads/2014/10/fgv-logo-1.png";
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-3 text-white">
-              <div className="bg-[#30363D] p-1.5 rounded-lg">
-                <ShieldCheck size={18} className="text-[#1F6FEB]" />
+        <div className="flex flex-col h-full">
+          {/* Brand */}
+          <div className="p-8">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <div className="w-4 h-4 bg-black"></div>
               </div>
-              <div>
-                <span className="text-sm font-black tracking-tight block leading-none uppercase">Operações</span>
-                <span className="text-[9px] font-bold text-[#8B949E] uppercase tracking-[0.15em]">Gestão de Férias</span>
-              </div>
+              <span className="font-bold text-lg tracking-tight">Controle de Férias</span>
             </div>
           </div>
 
-          <nav className="space-y-1 flex-1">
+          {/* Nav */}
+          <nav className="flex-1 px-4 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -262,10 +235,10 @@ const Sidebar: React.FC = () => {
                   to={item.path}
                   onClick={() => setIsOpen(false)}
                   className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all
+                    flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all
                     ${isActive 
-                      ? 'bg-[#1F6FEB] text-white shadow-lg shadow-blue-500/20 translate-x-1' 
-                      : 'hover:bg-[#30363D] hover:text-white'}
+                      ? 'bg-[#1F6FEB]/10 text-[#1F6FEB] font-bold' 
+                      : 'text-[#8B949E] hover:text-white hover:bg-[#30363D]'}
                   `}
                 >
                   <Icon size={18} />
@@ -273,32 +246,48 @@ const Sidebar: React.FC = () => {
                 </Link>
               );
             })}
-          </nav>
 
-          <div className="mt-auto pt-6 border-t border-[#30363D] space-y-1">
-            <div className="px-4 py-3 mb-4 bg-[#0D1117] rounded-xl border border-[#30363D]">
-              <div className="flex items-center gap-2 mb-2">
-                <Lock size={12} className="text-[#1F6FEB]" />
-                <span className="text-[10px] font-black text-[#8B949E] uppercase tracking-widest">Acesso Seguro</span>
-              </div>
-              <p className="text-[10px] text-[#8B949E]/70 leading-tight">Diretoria de Operações</p>
+            <div className="pt-8 pb-2 px-4">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#484F58]">Sistema</span>
             </div>
-            
-            <Link 
+
+            <Link
               to="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-[#30363D] transition-colors"
+              className={`
+                flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all
+                ${location.pathname === '/profile' 
+                  ? 'bg-[#1F6FEB]/10 text-[#1F6FEB] font-bold' 
+                  : 'text-[#8B949E] hover:text-white hover:bg-[#30363D]'}
+              `}
             >
-              <UserIcon size={18} />
-              <span>Meu Perfil</span>
+              <Settings size={18} />
+              Configurações
             </Link>
-            <button 
-              onClick={logout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium hover:bg-rose-900/20 text-rose-500 transition-colors"
-            >
-              <LogOut size={18} />
-              <span>Sair do Sistema</span>
-            </button>
+          </nav>
+
+          {/* Profile Card */}
+          <div className="p-4 border-t border-[#30363D]">
+            <div className="flex items-center justify-between group p-3 rounded-2xl hover:bg-[#30363D]/50 transition-all">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-[#30363D] flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-black text-sm">{user?.name.charAt(0)}</span>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-bold text-white truncate">{user?.name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    <span className="text-[10px] text-[#8B949E] font-medium uppercase tracking-wider">M365 Conectado</span>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={logout}
+                className="p-2 text-[#484F58] hover:text-rose-500 transition-colors"
+              >
+                <LogoutIcon size={18} />
+              </button>
+            </div>
           </div>
         </div>
       </aside>

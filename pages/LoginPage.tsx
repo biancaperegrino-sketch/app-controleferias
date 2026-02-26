@@ -1,141 +1,113 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../App';
-import { ArrowRight, Loader2, ShieldCheck, Globe, Lock } from 'lucide-react';
-import { UserRole } from '../types';
+import { Loader2, Mail, Lock, ShieldX, ShieldAlert, ArrowRight } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, logo } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const handleLogin = async (role: UserRole) => {
-    setSelectedRole(role);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
     setLoading(true);
-    // Simula o redirecionamento OAuth 2.0 / OpenID Connect para Microsoft Entra ID
+    
+    // Simulação de delay para autenticação
     setTimeout(async () => {
-      await login(role);
-      setLoading(false);
-    }, 2000);
+      const result = await login(email, password);
+      if (!result.success) {
+        setError(result.message || "Credenciais inválidas.");
+        setLoading(false);
+      }
+    }, 1500);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0D1117] p-6 font-sans relative overflow-hidden">
-      {/* Blue glow effects for depth */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#1F6FEB]/10 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#388BFD]/10 rounded-full blur-[120px]"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#004b8d]/5 rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-[-5%] right-[-5%] w-[40%] h-[40%] bg-[#009fe3]/5 rounded-full blur-[100px]"></div>
 
-      <div className="w-full max-w-[480px] relative z-10">
-        <div className="bg-[#161B22] rounded-[2.5rem] shadow-[0_32px_128px_-16px_rgba(0,0,0,0.8)] overflow-hidden border border-[#30363D] flex flex-col">
-          
-          {/* Top Section with Branding */}
-          <div className="h-2 bg-gradient-to-r from-[#1F6FEB] to-[#388BFD]"></div>
-
-          <div className="p-12 pb-8">
-            <div className="mb-10 flex justify-center bg-white p-4 rounded-3xl shadow-lg">
-              <img 
-                src="https://raw.githubusercontent.com/filipe-fgv/logos/main/fgv-do-logo.png" 
-                alt="FGV DO" 
-                className="h-14 w-auto object-contain"
-                onError={(e) => {
-                  e.currentTarget.src = "https://logodownload.org/wp-content/uploads/2014/10/fgv-logo-1.png";
-                }}
-              />
-            </div>
-
-            <div className="text-center space-y-4">
-              <h2 className="text-4xl font-black text-white tracking-tight leading-none uppercase">
-                Controle de <span className="text-[#1F6FEB]">Saldo</span>
-              </h2>
-              <div className="flex items-center justify-center gap-3">
-                <div className="h-[2px] w-8 bg-[#30363D] rounded-full"></div>
-                <h3 className="text-[#8B949E] font-black uppercase tracking-[0.3em] text-[10px]">
-                  Diretoria de Operações
-                </h3>
-                <div className="h-[2px] w-8 bg-[#30363D] rounded-full"></div>
+      <div className="w-full max-w-[420px] relative z-10">
+        <div className="bg-[#161B22] rounded-[3rem] shadow-2xl border border-[#30363D] overflow-hidden">
+          <div className="p-10 md:p-12 space-y-10">
+            <div className="flex flex-col items-center gap-6">
+              <div className="bg-white p-5 rounded-[1.5rem] shadow-2xl w-full flex items-center justify-center min-h-[120px]">
+                <img src={logo} alt="Branding" className="h-20 w-auto object-contain" />
+              </div>
+              <div className="text-center">
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight">Portal de <span className="text-[#1F6FEB]">Operações</span></h2>
+                <p className="text-[#8B949E] font-black uppercase tracking-[0.3em] text-[8px] mt-2">Gestão de Direitos e Férias</p>
               </div>
             </div>
-          </div>
 
-          <div className="px-12 pb-12 pt-4 space-y-10">
             {!loading ? (
-              <div className="space-y-6">
+              <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-4">
-                  <button 
-                    onClick={() => handleLogin(UserRole.ADMIN)}
-                    className="w-full flex items-center justify-between bg-[#0D1117] border border-[#30363D] hover:border-[#1F6FEB] hover:bg-[#1F6FEB]/10 px-6 py-6 rounded-[1.5rem] transition-all group shadow-sm"
-                  >
-                    <div className="flex items-center gap-5">
-                      <div className="h-14 w-14 bg-[#161B22] border border-[#30363D] rounded-2xl flex items-center justify-center text-[#8B949E] group-hover:bg-[#1F6FEB] group-hover:text-white transition-all shadow-sm">
-                        <Lock size={24} />
-                      </div>
-                      <div className="text-left">
-                        <span className="block text-xl font-black text-white leading-none uppercase">Administrador</span>
-                        <span className="block text-[10px] text-[#1F6FEB] mt-2 uppercase font-black tracking-widest opacity-80">Acesso Pleno • Microsoft 365</span>
-                      </div>
+                  <div className="relative">
+                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-[#484F58]" size={18} />
+                    <input 
+                      type="email" 
+                      required
+                      placeholder="e-mail corporativo"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-14 pr-6 py-4 bg-[#0D1117] border border-[#30363D] focus:border-[#1F6FEB] rounded-2xl outline-none font-bold text-white placeholder:text-[#484F58] transition-all text-sm"
+                    />
+                  </div>
+
+                  <div className="relative">
+                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-[#484F58]" size={18} />
+                    <input 
+                      type="password" 
+                      required
+                      placeholder="senha de acesso"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-14 pr-6 py-4 bg-[#0D1117] border border-[#30363D] focus:border-[#1F6FEB] rounded-2xl outline-none font-bold text-white placeholder:text-[#484F58] transition-all text-sm"
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-1">
+                      <ShieldX className="text-rose-500 shrink-0" size={18} />
+                      <p className="text-rose-500 text-[9px] font-black uppercase tracking-widest leading-tight">{error}</p>
                     </div>
-                    <ArrowRight size={22} className="text-[#30363D] group-hover:text-[#1F6FEB] group-hover:translate-x-1 transition-all" />
-                  </button>
+                  )}
 
                   <button 
-                    onClick={() => handleLogin(UserRole.READONLY)}
-                    className="w-full flex items-center justify-between bg-[#0D1117] border border-[#30363D] hover:border-[#1F6FEB] hover:bg-[#1F6FEB]/10 px-6 py-6 rounded-[1.5rem] transition-all group shadow-sm"
+                    type="submit" 
+                    className="w-full flex items-center justify-center gap-4 bg-[#1F6FEB] hover:bg-[#388BFD] text-white px-6 py-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 group"
                   >
-                    <div className="flex items-center gap-5">
-                      <div className="h-14 w-14 bg-[#161B22] border border-[#30363D] rounded-2xl flex items-center justify-center text-[#8B949E] group-hover:bg-[#1F6FEB] group-hover:text-white transition-all shadow-sm">
-                        <Globe size={24} />
-                      </div>
-                      <div className="text-left">
-                        <span className="block text-xl font-black text-white leading-none uppercase">Consulta</span>
-                        <span className="block text-[10px] text-[#8B949E] mt-2 uppercase font-black tracking-widest opacity-80">Leitura • Microsoft 365</span>
-                      </div>
-                    </div>
-                    <ArrowRight size={22} className="text-[#30363D] group-hover:text-[#1F6FEB] group-hover:translate-x-1 transition-all" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Acessar Sistema</span>
+                    <ArrowRight size={16} />
                   </button>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 space-y-8">
-                <div className="relative">
-                  <div className="absolute inset-[-30px] bg-[#1F6FEB]/20 rounded-full blur-3xl animate-pulse"></div>
-                  <Loader2 className="animate-spin text-[#1F6FEB] relative z-10" size={72} strokeWidth={3} />
-                  <div className="absolute inset-0 flex items-center justify-center relative z-20">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" className="w-8 h-8" alt="MS" />
-                  </div>
+
+                <div className="pt-8 border-t border-[#30363D] text-center">
+                   <div className="inline-flex items-center gap-2 opacity-30">
+                      <ShieldAlert size={12} className="text-white" />
+                      <span className="text-[8px] font-black uppercase text-white tracking-[0.3em]">Ambiente Seguro Corporativo</span>
+                   </div>
                 </div>
-                <div className="text-center relative z-10">
-                  <p className="text-2xl font-black text-white tracking-tight uppercase">Autenticando...</p>
-                  <p className="text-[11px] text-[#1F6FEB] mt-2 uppercase font-black tracking-[0.3em] animate-pulse">Conexão Segura Ativa</p>
+              </form>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 space-y-6 animate-pulse">
+                <Loader2 className="animate-spin text-[#1F6FEB]" size={48} strokeWidth={4} />
+                <div className="text-center">
+                  <p className="text-lg font-black text-white uppercase tracking-widest">Autenticando...</p>
+                  <p className="text-[8px] text-[#1F6FEB] font-black uppercase tracking-[0.4em] mt-2">Fundação Getulio Vargas</p>
                 </div>
               </div>
             )}
-
-            <div className="pt-10 border-t border-[#30363D] flex flex-col items-center gap-5">
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-white border-4 border-[#161B22] flex items-center justify-center">
-                     <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" className="w-4 h-4" alt="MS" />
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-[#30363D] border-4 border-[#161B22] flex items-center justify-center">
-                     <ShieldCheck size={12} className="text-[#1F6FEB]" />
-                  </div>
-                </div>
-                <span className="text-[10px] uppercase font-black tracking-[0.2em] text-[#8B949E]">Microsoft Entra Verified</span>
-              </div>
-              <p className="text-[10px] text-[#8B949E] text-center leading-relaxed px-4 font-bold uppercase opacity-60">
-                Acesso restrito a colaboradores autorizados da Fundação Getulio Vargas. 
-                O sistema utiliza criptografia de ponta a ponta.
-              </p>
-            </div>
           </div>
         </div>
         
-        <div className="mt-12 flex flex-col items-center gap-3">
-          <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.4em]">
-            FUNDAÇÃO GETULIO VARGAS
-          </p>
-          <div className="h-1.5 w-16 bg-[#30363D] rounded-full"></div>
-        </div>
+        <p className="mt-8 text-center text-[9px] font-black uppercase tracking-[0.3em] text-[#484F58]">
+          &copy; {new Date().getFullYear()} Fundação Getulio Vargas • Operações
+        </p>
       </div>
     </div>
   );
